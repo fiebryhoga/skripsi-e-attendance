@@ -4,51 +4,52 @@ namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
 use App\Models\User;
-use App\Enums\UserRole;
+use App\Enums\UserRole; 
 use Illuminate\Support\Facades\Hash;
 
 class UserSeeder extends Seeder
 {
-    public function run(): void
+    public function run()
     {
-        
+        $faker = \Faker\Factory::create('id_ID');
+
+        // 1. ADMIN (Akses Penuh)
         User::create([
-            'name' => 'Budi Admin',
-            'nip' => '19800101', 
-            'email' => 'admin@sman1malang.sch.id',
-            'role' => UserRole::ADMIN,
+            'name' => 'Administrator IT',
+            'email' => 'admin@sman1.sch.id',
             'password' => Hash::make('password'),
-            'avatar' => null, 
+            'nip' => '199001012022011001',
+            'roles' => [UserRole::ADMIN], 
         ]);
 
-        
+        // 2. GURU TATIB (Guru Mapel + Akses Tatib)
+        // Logika: Dia bisa mengajar (masuk jadwal) DAN bisa input pelanggaran
         User::create([
-            'name' => 'Siti Wali Kelas',
-            'nip' => '19850202',
-            'email' => 'siti@sman1malang.sch.id',
-            'role' => UserRole::WALI_KELAS,
+            'name' => 'Pak Budi (Guru Tatib)',
+            'email' => 'tatib@sman1.sch.id',
             'password' => Hash::make('password'),
-            'avatar' => null,
+            'nip' => '198505052010011005',
+            'roles' => [UserRole::GURU_MAPEL, UserRole::GURU_TATIB], 
         ]);
 
-        
-        User::create([
-            'name' => 'Pak Tono Tatib',
-            'nip' => '19750303',
-            'email' => 'tono@sman1malang.sch.id',
-            'role' => UserRole::GURU_TATIB,
-            'password' => Hash::make('password'),
-            'avatar' => null,
-        ]);
+        // 3. GENERATE 15 GURU LAINNYA
+        for ($i = 1; $i <= 15; $i++) {
+            
+            // Default semua adalah Guru Mapel (Punya Jadwal Mengajar)
+            $roles = [UserRole::GURU_MAPEL]; 
 
-        
-        User::create([
-            'name' => 'Bu Ani Matematika',
-            'nip' => '19900404',
-            'email' => 'ani@sman1malang.sch.id',
-            'role' => UserRole::GURU_MAPEL,
-            'password' => Hash::make('password'),
-            'avatar' => null,
-        ]);
+            // Guru 1-5 diberi tugas tambahan Wali Kelas
+            if ($i <= 5) {
+                $roles[] = UserRole::WALI_KELAS; 
+            }
+
+            User::create([
+                'name' => $faker->firstName . ' ' . $faker->lastName . ', S.Pd', 
+                'email' => "guru{$i}@sman1.sch.id", 
+                'password' => Hash::make('password'),
+                'nip' => $faker->unique()->numerify('19##########00##'), 
+                'roles' => $roles,
+            ]);
+        }
     }
 }

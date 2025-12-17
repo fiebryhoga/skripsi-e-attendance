@@ -19,6 +19,9 @@ class DatabaseSeeder extends Seeder
             UserSeeder::class,
             ClassroomSeeder::class,
             StudentSeeder::class,
+            ViolationCategorySeeder::class,
+            SubjectSeeder::class,
+            ScheduleSeeder::class,
         ]);
     }
 }

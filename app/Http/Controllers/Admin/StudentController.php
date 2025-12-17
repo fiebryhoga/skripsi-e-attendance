@@ -60,6 +60,10 @@ class StudentController extends Controller
 
     public function show(Student $student)
     {
+        $student->load(['classroom', 'violations' => function($query) {
+            $query->latest('tanggal')->with('category', 'reporter');
+        }]);
+
         return view('admin.students.show', compact('student'));
     }
 
@@ -75,7 +79,7 @@ class StudentController extends Controller
         $request->validate([
             'nis' => 'required|unique:students,nis',
             'name' => 'required|string|max:255',
-            'photo' => 'nullable|image|max:2048', 
+            'photo' => 'nullable|image|max:10240', 
             'angkatan' => 'required|numeric|digits:4',
         ]);
 
@@ -105,21 +109,25 @@ class StudentController extends Controller
         $request->validate([
             'nis' => 'required|unique:students,nis,' . $student->id,
             'name' => 'required|string|max:255',
-            'photo' => 'nullable|image|max:2048',
+            'photo' => 'nullable|image|max:10240',
             'classroom_id' => 'nullable|exists:classrooms,id',
             'angkatan' => 'required|numeric|digits:4',
         ]);
 
+        // Ambil semua data input ke variabel $data
         $data = $request->all();
 
         if ($request->hasFile('photo')) {
-            
+            // Hapus foto lama jika ada
             if ($student->photo) {
                 Storage::disk('public')->delete($student->photo);
             }
+            // Simpan foto baru ke variabel $data['photo']
             $data['photo'] = $request->file('photo')->store('students', 'public');
         }
-        $student->update($request->all());
+
+        // PERBAIKAN DI SINI: Gunakan $data, BUKAN $request->all()
+        $student->update($data); 
 
         Auth::user()->notify(new DataChangedNotification('Data siswa ' . $student->name . ' berhasil diperbarui.'));
         return redirect()->route('admin.students.index');

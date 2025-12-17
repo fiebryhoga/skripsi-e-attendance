@@ -17,7 +17,7 @@ return new class extends Migration
             $table->string('name');
             $table->string('nip')->unique(); 
             $table->string('email')->unique()->nullable();
-            $table->string('role')->default('guru_mapel');
+            $table->json('roles')->nullable();
             $table->string('avatar')->nullable();
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');

@@ -29,46 +29,69 @@ class ClassroomController extends Controller
     public function show(Classroom $classroom)
     {
         $classroom->load(['students', 'teacher']);
-        
-        $teachers = User::whereIn('role', [UserRole::GURU_MAPEL, UserRole::WALI_KELAS])
-                        ->orderBy('name')
-                        ->get();
 
-        $availableStudents = Student::whereNull('classroom_id')
-                                    ->orderBy('name')
-                                    ->get();
+
+
+        $classroom->load(['students' => function ($query) {
+        $query->orderBy('name', 'asc');
+    }, 'teacher']);
+        
+        $teachers = User::all()->filter(function ($user) {
+            return $user->hasRole(UserRole::WALI_KELAS) || 
+                   $user->hasRole(UserRole::GURU_MAPEL);
+        })->sortBy('name')->values();
+
+        // PERUBAHAN DI SINI:
+        // Ambil semua siswa KECUALI yang sudah ada di kelas yang sedang dibuka.
+        // Jadi siswa dari kelas lain (X-B, XI-A, dll) akan muncul di list.
+        $availableStudents = Student::where(function($query) use ($classroom) {
+                                    $query->where('classroom_id', '!=', $classroom->id)
+                                          ->orWhereNull('classroom_id');
+                                })
+                                ->with('classroom') // Load relasi classroom untuk label di dropdown
+                                ->orderBy('name')
+                                ->get();
 
         $otherClassrooms = Classroom::where('id', '!=', $classroom->id)->get();
 
         return view('admin.classrooms.show', compact('classroom', 'teachers', 'availableStudents', 'otherClassrooms'));
     }
 
-    
     public function update(Request $request, Classroom $classroom)
     {
         $request->validate(['teacher_id' => 'nullable|exists:users,id']);
 
-        
-        
-
-        
         $classroom->update(['teacher_id' => $request->teacher_id]);
 
-        
         $teacherName = "Tidak Ada";
         
         if ($request->teacher_id) {
             $teacher = User::find($request->teacher_id);
             
+            // PERBAIKAN LOGIKA UPDATE ROLE:
+            // Jika guru tersebut belum punya role Wali Kelas, tambahkan role tersebut.
+            // Kita tidak me-replace role lama, tapi menambahkan (karena array).
             
-            if ($teacher->role === UserRole::GURU_MAPEL) {
-                $teacher->update(['role' => UserRole::WALI_KELAS]);
+            if (!$teacher->hasRole(UserRole::WALI_KELAS)) {
+                // Ambil roles yang ada sekarang
+                $currentRoles = $teacher->roles ?? [];
+                
+                // Jika tipe datanya Collection (karena Cast), ubah ke array dulu
+                if ($currentRoles instanceof \Illuminate\Support\Collection) {
+                    $currentRoles = $currentRoles->toArray();
+                }
+
+                // Tambahkan role baru ke array
+                $currentRoles[] = UserRole::WALI_KELAS;
+
+                // Simpan kembali
+                $teacher->roles = $currentRoles;
+                $teacher->save();
             }
             
             $teacherName = $teacher->name;
         }
 
-        
         Auth::user()->notify(new DataChangedNotification(
             "Wali kelas {$classroom->name} diperbarui menjadi: {$teacherName}"
         ));
@@ -81,17 +104,25 @@ class ClassroomController extends Controller
     {
         $request->validate(['student_id' => 'required|exists:students,id']);
         
-        $student = Student::find($request->student_id);
+        $student = Student::findOrFail($request->student_id);
+        
+        // Simpan nama kelas lama untuk keperluan notifikasi
+        $oldClass = $student->classroom; 
+
+        // Update ke kelas baru
         $student->update(['classroom_id' => $classroom->id]);
 
-        
-        Auth::user()->notify(new DataChangedNotification(
-            "Siswa {$student->name} berhasil ditambahkan ke kelas {$classroom->name}"
-        ));
+        // Cek Logika Notifikasi: Pindahan atau Masuk Baru?
+        if ($oldClass) {
+            $message = "Siswa {$student->name} berhasil dipindahkan dari {$oldClass->name} ke {$classroom->name}";
+        } else {
+            $message = "Siswa {$student->name} berhasil ditambahkan ke kelas {$classroom->name}";
+        }
 
-        return back()->with('success', 'Siswa berhasil ditambahkan ke kelas.');
+        Auth::user()->notify(new DataChangedNotification($message));
+
+        return back()->with('success', $message);
     }
-
     
     public function transferStudent(Request $request, Student $student)
     {

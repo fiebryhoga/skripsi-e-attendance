@@ -7,6 +7,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Redirect;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
 
 class ProfileController extends Controller
@@ -56,5 +57,29 @@ class ProfileController extends Controller
         $request->session()->regenerateToken();
 
         return Redirect::to('/');
+    }
+
+    public function updateAvatar(Request $request): RedirectResponse
+    {
+        $request->validate([
+            'avatar' => ['required', 'image', 'max:2048'], // Max 2MB
+        ]);
+
+        $user = $request->user();
+
+        if ($request->hasFile('avatar')) {
+            // 1. Hapus foto lama jika ada (agar server tidak penuh)
+            if ($user->avatar) {
+                Storage::disk('public')->delete($user->avatar);
+            }
+
+            // 2. Simpan foto baru ke folder 'avatars' di storage public
+            $path = $request->file('avatar')->store('avatars', 'public');
+
+            // 3. Update database
+            $user->update(['avatar' => $path]);
+        }
+
+        return Redirect::route('profile.edit')->with('status', 'avatar-updated');
     }
 }

@@ -1,6 +1,7 @@
 <x-app-layout>
     <x-slot name="header">Detail Kelas {{ $classroom->name }}</x-slot>
 
+    {{-- Alert Messages --}}
     @if(session('success'))
         <div x-data="{ show: true }" x-show="show" class="mb-6 p-4 bg-green-50 border border-green-100 text-green-700 rounded-xl flex justify-between items-center shadow-sm">
             <span class="flex items-center gap-2">
@@ -16,8 +17,10 @@
 
     <div class="grid grid-cols-1 xl:grid-cols-3 gap-8">
         
+        {{-- KOLOM KIRI: INFO KELAS & WALI KELAS --}}
         <div class="xl:col-span-1 space-y-6">
             
+            {{-- Card Info Kelas --}}
             <div class="bg-white rounded-3xl shadow-xl shadow-gray-100/50 border border-gray-100 overflow-hidden relative">
                 <div class="h-24 bg-gradient-to-r from-indigo-600 to-violet-600"></div>
                 <div class="px-6 pb-6 -mt-12 text-center">
@@ -44,6 +47,7 @@
                 </div>
             </div>
 
+            {{-- Card Wali Kelas --}}
             <div class="bg-white rounded-3xl shadow-xl shadow-gray-100/50 border border-gray-100 p-6 relative z-10">
                 <h4 class="font-bold text-gray-800 mb-4 flex items-center gap-2">
                     <svg class="w-5 h-5 text-indigo-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
@@ -55,13 +59,14 @@
                     @method('PUT')
                     
                     @php
+                        // Mapping Data Guru
                         $teacherList = $teachers->map(function($t) {
                             return [
                                 'id' => $t->id,
                                 'label' => $t->name,
                                 'sublabel' => 'NIP: ' . $t->nip
                             ];
-                        });
+                        })->values(); // Reset index array
                     @endphp
 
                     <div class="mb-4">
@@ -124,6 +129,7 @@
             </div>
         </div>
 
+        {{-- KOLOM KANAN: DAFTAR SISWA --}}
         <div class="xl:col-span-2" x-data="{ showAddModal: false, showTransferModal: false, selectedStudent: null }">
             
             <div class="bg-white rounded-3xl shadow-xl shadow-gray-100/50 border border-gray-100 overflow-hidden min-h-[600px] flex flex-col z-0">
@@ -133,7 +139,7 @@
                     
                     <button @click="showAddModal = true" class="flex items-center gap-2 px-5 py-2.5 bg-indigo-600 text-white font-semibold rounded-xl hover:bg-indigo-700 shadow-lg shadow-indigo-500/30 transition-all">
                         <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/></svg>
-                        Masukan Siswa
+                        Masukan / Pindahkan Siswa
                     </button>
                 </div>
 
@@ -183,27 +189,37 @@
                 </div>
             </div>
 
+            {{-- MODAL 1: ADD/TRANSFER STUDENT --}}
             <div x-show="showAddModal" style="display: none;" 
                  class="fixed inset-0 z-50 flex items-center justify-center bg-gray-900/60 backdrop-blur-sm p-4"
                  x-transition.opacity>
                 
                 <div class="bg-white w-full max-w-md rounded-2xl shadow-2xl p-6" @click.away="showAddModal = false">
                     <h3 class="text-xl font-bold text-gray-800 mb-4">Masukan Siswa ke Kelas</h3>
-                    <p class="text-sm text-gray-500 mb-4">Cari siswa yang belum memiliki kelas.</p>
+                    <p class="text-sm text-gray-500 mb-4">Cari siswa baru atau siswa dari kelas lain.</p>
                     
                     <form action="{{ route('admin.classrooms.assign-student', $classroom) }}" method="POST">
                         @csrf
                         
                         @php
+                            // Mapping Data Siswa Available (Siswa yang belum punya kelas ATAU punya kelas lain)
                             $studentList = $availableStudents->map(function($s) {
-                                // Format: Nama - NIS - Kelas (Jika kosong tulis Belum Masuk Kelas)
-                                $kelas = $s->classroom ? $s->classroom->name : 'Belum Masuk Kelas';
+                                // Tentukan Status & Warna
+                                if ($s->classroom) {
+                                    $statusLabel = "Pindahan dari {$s->classroom->name}";
+                                    $statusColor = "text-orange-600 font-bold";
+                                } else {
+                                    $statusLabel = "Belum Masuk Kelas";
+                                    $statusColor = "text-green-600 font-medium";
+                                }
+
                                 return [
                                     'id' => $s->id,
-                                    'label' => "{$s->name} - {$s->nis}",
-                                    'sublabel' => $kelas
+                                    'label' => "{$s->name} ({$s->nis})",
+                                    'sublabel' => $statusLabel,
+                                    'status_color' => $statusColor
                                 ];
-                            });
+                            })->values(); // Reset index array agar JSON aman
                         @endphp
 
                         <div class="mb-6">
@@ -229,12 +245,18 @@
 
                                 <div x-show="isOpen" class="absolute z-50 w-full mt-1 bg-white rounded-xl shadow-xl border border-gray-100 max-h-60 overflow-y-auto">
                                     <template x-for="item in filteredItems" :key="item.id">
-                                        <div @click="select(item)" class="px-4 py-3 hover:bg-indigo-50 cursor-pointer border-b border-gray-50">
-                                            <div class="font-bold text-gray-800 text-sm" x-text="item.label"></div>
-                                            <div class="text-xs text-gray-500" x-text="item.sublabel"></div>
+                                        <div @click="select(item)" class="px-4 py-3 hover:bg-indigo-50 cursor-pointer border-b border-gray-50 flex justify-between items-center">
+                                            <div>
+                                                <div class="font-bold text-gray-800 text-sm" x-text="item.label"></div>
+                                                <div class="text-xs" :class="item.status_color" x-text="item.sublabel"></div>
+                                            </div>
+                                            {{-- Icon Indikator jika Pindahan --}}
+                                            <template x-if="item.sublabel.includes('Pindahan')">
+                                                 <svg class="w-4 h-4 text-orange-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" /></svg>
+                                            </template>
                                         </div>
                                     </template>
-                                    <div x-show="filteredItems.length === 0" class="px-4 py-3 text-sm text-gray-400 text-center">Siswa tidak ditemukan / sudah punya kelas.</div>
+                                    <div x-show="filteredItems.length === 0" class="px-4 py-3 text-sm text-gray-400 text-center">Data tidak ditemukan.</div>
                                 </div>
                             </div>
                         </div>
@@ -247,6 +269,7 @@
                 </div>
             </div>
 
+            {{-- MODAL 2: TRANSFER STUDENT OUT --}}
             <div x-show="showTransferModal" style="display: none;" 
                  class="fixed inset-0 z-50 flex items-center justify-center bg-gray-900/60 backdrop-blur-sm p-4"
                  x-transition.opacity>
@@ -277,6 +300,7 @@
         </div>
     </div>
 
+    {{-- SCRIPT ALPINE JS (GLOBAL) --}}
     <script>
         document.addEventListener('alpine:init', () => {
             Alpine.data('searchableSelect', (config) => ({

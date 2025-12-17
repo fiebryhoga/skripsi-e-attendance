@@ -26,4 +26,15 @@ class Student extends Model
         return $this->belongsTo(Classroom::class);
     }
 
+    public function violations()
+    {
+        return $this->hasMany(Violation::class);
+    }
+
+    // --- TAMBAHKAN INI ---
+    public function attendances()
+    {
+        return $this->hasMany(StudentAttendance::class);
+    }
+
 }
