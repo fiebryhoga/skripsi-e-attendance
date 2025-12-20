@@ -1,14 +1,16 @@
 <x-app-layout>
     <x-slot name="header">Data Siswa</x-slot>
 
-    <div class="flex flex-col md:flex-row justify-between items-end md:items-center gap-4 mb-8" x-data="{ showImportModal: false }">
+    <div class="flex flex-col md:flex-row justify-between items-end md:items-center gap-4 mb-8" 
+         x-data="{ showImportModal: false, fileName: null }">
+        
         <div>
             <h2 class="text-2xl font-bold text-gray-800">Daftar Siswa</h2>
             <p class="text-sm text-gray-500 mt-1">Total {{ $students->total() }} siswa terdaftar dalam sistem.</p>
         </div>
         
         <div class="flex gap-2">
-            <button @click="showImportModal = true" class="flex items-center gap-2 px-5 py-2.5 bg-white border border-gray-200 text-gray-700 font-semibold rounded-xl hover:bg-gray-50 hover:text-indigo-600 transition-all shadow-sm">
+            <button @click="showImportModal = true; fileName = null" class="flex items-center gap-2 px-5 py-2.5 bg-white border border-gray-200 text-gray-700 font-semibold rounded-xl hover:bg-gray-50 hover:text-indigo-600 transition-all shadow-sm">
                 <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" /></svg>
                 Import Excel
             </button>
@@ -43,12 +45,23 @@
                             <label class="block mb-2 text-sm font-medium text-gray-900">Upload File Excel</label>
                             <div class="flex items-center justify-center w-full">
                                 <label for="dropzone-file" class="flex flex-col items-center justify-center w-full h-32 border-2 border-gray-300 border-dashed rounded-xl cursor-pointer bg-gray-50 hover:bg-indigo-50 hover:border-indigo-400 transition-all group">
-                                    <div class="flex flex-col items-center justify-center pt-5 pb-6">
+                                    
+                                    <div x-show="!fileName" class="flex flex-col items-center justify-center pt-5 pb-6">
                                         <svg class="w-8 h-8 mb-3 text-gray-400 group-hover:text-indigo-500 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" /></svg>
                                         <p class="mb-2 text-sm text-gray-500"><span class="font-semibold">Klik untuk upload</span> atau drag and drop</p>
                                         <p class="text-xs text-gray-500">XLSX, XLS, atau CSV (MAX. 50MB)</p>
                                     </div>
-                                    <input id="dropzone-file" name="file" type="file" class="hidden" required accept=".xlsx,.xls,.csv" />
+
+                                    <div x-show="fileName" class="flex flex-col items-center justify-center pt-5 pb-6" style="display: none;">
+                                        <svg class="w-10 h-10 mb-2 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                        </svg>
+                                        <p class="text-sm text-gray-900 font-semibold" x-text="fileName"></p>
+                                        <p class="text-xs text-indigo-500 mt-1">Klik untuk ganti file</p>
+                                    </div>
+
+                                    <input id="dropzone-file" name="file" type="file" class="hidden" required accept=".xlsx,.xls,.csv" 
+                                           @change="fileName = $event.target.files[0].name" />
                                 </label>
                             </div>
                         </div>
@@ -67,10 +80,9 @@
             </div>
         </div>
     </div>
-
+    
     <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 mb-6">
-        <form id="filterForm" class="grid grid-cols-1 md:grid-cols-4 gap-4">
-            
+       <form id="filterForm" class="grid grid-cols-1 md:grid-cols-4 gap-4">
             <div class="relative md:col-span-1">
                 <input type="text" name="search" id="searchInput" 
                        class="pl-10 pr-4 py-2.5 w-full text-sm bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 transition-all" 

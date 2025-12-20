@@ -18,43 +18,55 @@ class StudentController extends Controller
 {
     public function index(Request $request)
     {
-        
+        // Ambil data kelas untuk dropdown filter
         $classrooms = Classroom::orderBy('name')->get(); 
 
-        
-        $query = Student::with('classroom'); 
+        // Mulai Query Siswa
+        $query = Student::query();
 
-        
+        // 1. LAKUKAN JOIN (PENTING UNTUK SORTING KELAS)
+        $query->select('students.*') // Ambil data tabel students saja agar ID aman
+            ->leftJoin('classrooms', 'students.classroom_id', '=', 'classrooms.id')
+            ->with('classroom'); // Tetap eager load relasi untuk performa View
+
+        // 2. FILTER PENCARIAN
         if ($request->filled('search')) {
             $search = $request->search;
             $query->where(function($q) use ($search) {
-                $q->where('name', 'like', "%{$search}%")
-                ->orWhere('nis', 'like', "%{$search}%");
+                // Gunakan 'students.name' agar tidak bingung dengan 'classrooms.name'
+                $q->where('students.name', 'like', "%{$search}%")
+                ->orWhere('students.nis', 'like', "%{$search}%");
             });
         }
 
+        // Filter Angkatan
         if ($request->filled('angkatan')) {
-            $query->where('angkatan', $request->angkatan);
+            $query->where('students.angkatan', $request->angkatan);
         }
 
+        // Filter Gender
         if ($request->filled('gender')) {
-            $query->where('gender', $request->gender);
+            $query->where('students.gender', $request->gender);
         }
         
-        
+        // Filter Kelas Spesifik
         if ($request->filled('classroom_id')) {
-            $query->where('classroom_id', $request->classroom_id);
+            $query->where('students.classroom_id', $request->classroom_id);
         }
 
-        
-        $students = $query->latest()->paginate(10)->withQueryString();
+        // 3. SORTING / PENGURUTAN (Ubah logika latest() disini)
+        $query->orderBy('classrooms.name', 'asc') // Urutkan Nama Kelas (X, XI, XII)
+            ->orderBy('students.name', 'asc');  // Urutkan Nama Siswa (A-Z)
 
-        
+        // 4. PAGINATION (Ubah jadi 20)
+        $students = $query->paginate(20)->withQueryString();
+
+        // Return jika request AJAX (untuk live search/pagination tanpa reload)
         if ($request->ajax()) {
             return view('admin.students._table_rows', compact('students'))->render();
         }
 
-        
+        // Return view utama
         return view('admin.students.index', compact('students', 'classrooms'));
     }
 
@@ -178,21 +190,8 @@ class StudentController extends Controller
 
     public function downloadTemplate()
     {
-        
-        $headers = [
-            'Content-Type' => 'text/csv',
-            'Content-Disposition' => 'attachment; filename="template_siswa.csv"',
-        ];
-
-        $columns = ['nis', 'nama_lengkap', 'nama_kelas', 'jenis_kelamin', 'agama', 'nisn', 'angkatan', 'nomor_ortu'];
-
-        $callback = function() use ($columns) {
-            $file = fopen('php://output', 'w');
-            fputcsv($file, $columns);
-            fputcsv($file, ['2024001', 'Budi Santoso', 'XII-A', 'L', 'Islam', '0012345678', '2024', '08123456789']);
-            fclose($file);
-        };
-
+        // Langsung download menggunakan Class Export yang sudah Anda buat
+        // Tidak perlu header manual atau fputcsv
         return Excel::download(new StudentTemplateExport, 'template_siswa_simadis.xlsx');
     }
 }

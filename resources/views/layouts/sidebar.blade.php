@@ -24,7 +24,6 @@
             </div>
             <div class="overflow-hidden">
                 <p class="text-xs text-indigo-600 font-medium bg-indigo-50 inline-block px-2 py-0.5 rounded-full mt-1">
-                    {{-- Menampilkan Role (Mengambil role pertama dari Enum Collection) --}}
                     {{ Auth::user()->roles->first()?->label() ?? 'User' }}
                 </p>
             </div>
@@ -33,7 +32,9 @@
 
     <nav class="flex-1 overflow-y-auto py-4 px-4 space-y-1">
         
-        {{-- 1. DASHBOARD (SEMUA ROLE) --}}
+        {{-- ================================================= --}}
+        {{-- 1. DASHBOARD (SEMUA ROLE BISA LIHAT) --}}
+        {{-- ================================================= --}}
         <a href="{{ route('dashboard') }}" 
            class="{{ request()->routeIs('dashboard') ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-500/30' : 'text-gray-600 hover:bg-indigo-50 hover:text-indigo-600' }} group flex items-center px-3 py-3 text-sm font-medium rounded-xl transition-all duration-200">
             <svg class="{{ request()->routeIs('dashboard') ? 'text-white' : 'text-gray-400 group-hover:text-indigo-600' }} mr-3 flex-shrink-0 h-5 w-5 transition-colors duration-200" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -42,7 +43,9 @@
             Dashboard
         </a>
 
-        {{-- 2. KHUSUS ADMIN (MASTER DATA) --}}
+        {{-- ================================================= --}}
+        {{-- 2. KHUSUS ADMIN (MASTER DATA & JADWAL) --}}
+        {{-- ================================================= --}}
         @if(Auth::user()->hasRole(\App\Enums\UserRole::ADMIN))
             
             <div class="pt-6 pb-2 px-3 text-[10px] font-bold text-gray-400 uppercase tracking-widest">
@@ -81,40 +84,6 @@
                 Mata Pelajaran
             </a>
 
-            @if(Auth::user()->hasAnyRole([\App\Enums\UserRole::ADMIN, \App\Enums\UserRole::GURU_TATIB]))
-                <div class="pt-6 pb-2 px-3 text-[10px] font-bold text-gray-400 uppercase tracking-widest">
-                    Kedisiplinan
-                </div>
-
-                @if(Auth::user()->hasRole(\App\Enums\UserRole::ADMIN))
-                    <a href="{{ route('admin.violations.index') }}"
-                    class="{{ request()->routeIs('admin.violations.*') ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-500/30' : 'text-gray-600 hover:bg-indigo-50 hover:text-indigo-600' }} group flex items-center px-3 py-3 text-sm font-medium rounded-xl transition-all duration-200">
-                        <svg class="{{ request()->routeIs('admin.violations.*') ? 'text-white' : 'text-gray-400 group-hover:text-indigo-600' }} mr-3 flex-shrink-0 h-5 w-5 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                        </svg>
-                        Kategori Pelanggaran
-                    </a>
-                @endif
-                
-                {{-- MENU TATIB / ADMIN --}}
-                @if(Auth::user()->hasRole(\App\Enums\UserRole::ADMIN) || Auth::user()->hasRole(\App\Enums\UserRole::TATA_TERTIB))
-                    
-                    <div class="pt-6 pb-2 px-3 text-[10px] font-bold text-gray-400 uppercase tracking-widest">
-                        Tata Tertib
-                    </div>
-
-                    <a href="{{ route('admin.student-violations.index') }}" 
-                    class="{{ request()->routeIs('admin.student-violations.*') ? 'bg-red-600 text-white shadow-lg shadow-red-500/30' : 'text-gray-600 hover:bg-red-50 hover:text-red-600' }} group flex items-center px-3 py-3 text-sm font-medium rounded-xl transition-all duration-200">
-                        <svg class="{{ request()->routeIs('admin.student-violations.*') ? 'text-white' : 'text-gray-400 group-hover:text-red-600' }} mr-3 flex-shrink-0 h-5 w-5 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                        </svg>
-                        Pelanggaran Siswa
-                    </a>
-                @endif
-
-            @endif
-
-            {{-- MENU JADWAL KHUSUS ADMIN (MANAGE) --}}
             <div class="pt-6 pb-2 px-3 text-[10px] font-bold text-gray-400 uppercase tracking-widest">
                 Akademik
             </div>
@@ -127,11 +96,48 @@
                 Atur Jadwal Pelajaran
             </a>
 
+        @endif 
+        {{-- END IF ADMIN (Tutup Blok Admin Disini) --}}
+
+
+        {{-- ================================================= --}}
+        {{-- 3. KEDISIPLINAN (ADMIN & TATIB) --}}
+        {{-- ================================================= --}}
+        {{-- BLOK INI SEKARANG DILUAR BLOK ADMIN, JADI TATIB BISA LIHAT --}}
+        @if(Auth::user()->hasAnyRole([\App\Enums\UserRole::ADMIN, \App\Enums\UserRole::GURU_TATIB]))
+            
+            <div class="pt-6 pb-2 px-3 text-[10px] font-bold text-gray-400 uppercase tracking-widest">
+                Kedisiplinan
+            </div>
+
+            {{-- Master Kategori Pelanggaran (Hanya Admin) --}}
+            @if(Auth::user()->hasRole(\App\Enums\UserRole::ADMIN))
+                <a href="{{ route('admin.violations.index') }}"
+                class="{{ request()->routeIs('admin.violations.*') ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-500/30' : 'text-gray-600 hover:bg-indigo-50 hover:text-indigo-600' }} group flex items-center px-3 py-3 text-sm font-medium rounded-xl transition-all duration-200">
+                    <svg class="{{ request()->routeIs('admin.violations.*') ? 'text-white' : 'text-gray-400 group-hover:text-indigo-600' }} mr-3 flex-shrink-0 h-5 w-5 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                    </svg>
+                    Kategori Pelanggaran
+                </a>
+            @endif
+            
+            {{-- Pencatatan Pelanggaran Siswa (Admin & Tatib) --}}
+            <a href="{{ route('admin.student-violations.index') }}" 
+            class="{{ request()->routeIs('admin.student-violations.*') ? 'bg-red-600 text-white shadow-lg shadow-red-500/30' : 'text-gray-600 hover:bg-red-50 hover:text-red-600' }} group flex items-center px-3 py-3 text-sm font-medium rounded-xl transition-all duration-200">
+                <svg class="{{ request()->routeIs('admin.student-violations.*') ? 'text-white' : 'text-gray-400 group-hover:text-red-600' }} mr-3 flex-shrink-0 h-5 w-5 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                </svg>
+                Pelanggaran Siswa
+            </a>
+
         @endif
 
-        {{-- 3. MENU GURU & ADMIN (PRESENSI) --}}
+
+        {{-- ================================================= --}}
+        {{-- 4. PRESENSI & AKADEMIK (GURU & ADMIN) --}}
+        {{-- ================================================= --}}
         
-        {{-- Header Akademik jika belum muncul (karena Admin sudah punya header Akademik di atas) --}}
+        {{-- Header Akademik jika belum muncul (Untuk Guru) --}}
         @if(!Auth::user()->hasRole(\App\Enums\UserRole::ADMIN))
             <div class="pt-6 pb-2 px-3 text-[10px] font-bold text-gray-400 uppercase tracking-widest">
                 Akademik
@@ -146,7 +152,7 @@
             Presensi Siswa
         </a>
 
-        {{-- MENU REKAP PRESENSI (Tetap sama) --}}
+        {{-- MENU REKAP PRESENSI --}}
         <a href="{{ route('admin.attendances.recap') }}" 
            class="{{ request()->routeIs('admin.attendances.recap') ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-500/30' : 'text-gray-600 hover:bg-indigo-50 hover:text-indigo-600' }} group flex items-center px-3 py-3 text-sm font-medium rounded-xl transition-all duration-200">
             <svg class="{{ request()->routeIs('admin.attendances.recap') ? 'text-white' : 'text-gray-400 group-hover:text-indigo-600' }} mr-3 flex-shrink-0 h-5 w-5 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -156,8 +162,9 @@
         </a>
 
 
-
-        {{-- MENU KHUSUS WALI KELAS --}}
+        {{-- ================================================= --}}
+        {{-- 5. KHUSUS WALI KELAS --}}
+        {{-- ================================================= --}}
         @if(Auth::user()->hasRole(\App\Enums\UserRole::WALI_KELAS))
             
             <div class="pt-6 pb-2 px-3 text-[10px] font-bold text-gray-400 uppercase tracking-widest">
@@ -170,6 +177,27 @@
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
                 </svg>
                 Monitoring Kelas Saya
+            </a>
+        @endif
+
+
+
+        {{-- ================================================= --}}
+        {{-- 6. PENGATURAN SISTEM (KHUSUS ADMIN) --}}
+        {{-- ================================================= --}}
+        @if(Auth::user()->hasRole(\App\Enums\UserRole::ADMIN))
+            
+            <div class="pt-6 pb-2 px-3 text-[10px] font-bold text-gray-400 uppercase tracking-widest">
+                System
+            </div>
+
+            <a href="{{ route('settings.index') }}" 
+            class="{{ request()->routeIs('settings.*') ? 'bg-red-600 text-white shadow-lg shadow-red-500/30' : 'text-gray-600 hover:bg-red-50 hover:text-red-600' }} group flex items-center px-3 py-3 text-sm font-medium rounded-xl transition-all duration-200">
+                <svg class="{{ request()->routeIs('settings.*') ? 'text-white' : 'text-gray-400 group-hover:text-red-600' }} mr-3 flex-shrink-0 h-5 w-5 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                </svg>
+                Pengaturan & Reset
             </a>
         @endif
 

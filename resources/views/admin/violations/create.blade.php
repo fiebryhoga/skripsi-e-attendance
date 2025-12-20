@@ -1,159 +1,167 @@
 <x-app-layout>
-    <div class="py-12 bg-gray-50/50 min-h-screen">
+    {{-- Tambahkan CSS Tom Select --}}
+    <link href="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/css/tom-select.css" rel="stylesheet">
+    <style>
+        /* Custom Styling agar Tom Select cocok dengan Tailwind/Desain Anda */
+        .ts-control {
+            border-radius: 0.75rem; /* rounded-xl */
+            padding: 0.75rem 1rem;
+            border-color: #e5e7eb; /* border-gray-200 */
+            box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+            font-size: 0.875rem; /* text-sm */
+        }
+        .ts-control:focus {
+            border-color: #6366f1; /* border-indigo-500 */
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1); /* ring-indigo */
+        }
+        .ts-dropdown {
+            border-radius: 0.75rem;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            border: 1px solid #f3f4f6;
+            padding: 0.5rem;
+            z-index: 50;
+        }
+        .ts-dropdown .option {
+            border-radius: 0.5rem;
+            padding: 0.5rem 0.75rem;
+        }
+        .ts-dropdown .active {
+            background-color: #f5f3ff; /* bg-indigo-50 */
+            color: #4f46e5; /* text-indigo-600 */
+        }
+    </style>
+
+    <div class="min-h-screen bg-gray-50/50 py-12">
         <div class="max-w-4xl mx-auto sm:px-6 lg:px-8">
             
-            {{-- Navigasi Kembali --}}
-            <div class="mb-6">
-                <a href="{{ route('admin.student-violations.index') }}" class="inline-flex items-center text-sm font-medium text-gray-500 hover:text-indigo-600 transition-colors">
-                    <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
-                    Kembali ke Daftar
+            <div class="mb-8 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                <div>
+                    <h2 class="text-3xl font-extrabold text-gray-900 tracking-tight">Catat Pelanggaran</h2>
+                    <p class="text-sm text-gray-500 mt-2">Cari siswa berdasarkan Nama, NIS, atau Kelas.</p>
+                </div>
+                <a href="{{ route('admin.student-violations.index') }}" 
+                   class="inline-flex items-center px-4 py-2 bg-white border border-gray-200 rounded-xl text-sm font-medium text-gray-600 hover:bg-gray-50 hover:text-indigo-600 hover:border-indigo-200 transition-all shadow-sm">
+                    Kembali
                 </a>
             </div>
 
-            <div class="bg-white overflow-hidden shadow-xl sm:rounded-3xl border border-gray-100 relative">
-                
-                {{-- Decorative Line --}}
-                <div class="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500"></div>
-
-                <div class="px-8 py-6 border-b border-gray-100 bg-gray-50/30">
-                    <h2 class="text-xl font-bold text-gray-800">
-                        Catat Pelanggaran Baru
-                    </h2>
-                    <p class="text-sm text-gray-500 mt-1">Isi formulir berikut untuk merekam kedisiplinan siswa.</p>
-                </div>
-
-                <div class="p-8">
-                    {{-- Form dengan Alpine.js untuk Preview Gambar --}}
-                    <form action="{{ route('admin.student-violations.store') }}" 
-                          method="POST" 
-                          enctype="multipart/form-data" 
-                          class="space-y-8"
-                          x-data="{ 
-                              photoPreview: null,
-                              fileName: null,
-                              previewFile(event) {
-                                  const file = event.target.files[0];
-                                  if (file) {
-                                      this.fileName = file.name;
-                                      const reader = new FileReader();
-                                      reader.onload = (e) => { this.photoPreview = e.target.result; };
-                                      reader.readAsDataURL(file);
-                                  }
-                              }
-                          }">
+            <div class="bg-white rounded-3xl shadow-xl shadow-gray-200/50 border border-gray-100 overflow-hidden">
+                <div class="h-2 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500"></div>
+                <div class="p-8 md:p-10">
+                    <form action="{{ route('admin.student-violations.store') }}" method="POST" enctype="multipart/form-data" class="space-y-8">
                         @csrf
 
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        {{-- Section 1: Informasi --}}
+                        <div>
+                            <h3 class="text-lg font-bold text-gray-900 flex items-center gap-2 mb-6">
+                                <span class="flex items-center justify-center w-8 h-8 rounded-full bg-indigo-100 text-indigo-600 text-xs">01</span>
+                                Data Utama
+                            </h3>
                             
-                            {{-- Tanggal --}}
-                            <div>
-                                <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Tanggal Kejadian</label>
-                                <input type="date" name="tanggal" value="{{ old('tanggal', date('Y-m-d')) }}" 
-                                       class="w-full rounded-xl border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 py-3 transition-all cursor-pointer text-gray-700 font-medium">
-                                @error('tanggal') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
-                            </div>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                {{-- Tanggal --}}
+                                <div>
+                                    <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Tanggal</label>
+                                    <input type="date" name="tanggal" value="{{ old('tanggal', date('Y-m-d')) }}" 
+                                        class="block w-full border-gray-200 rounded-xl text-gray-900 focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 shadow-sm sm:text-sm" required>
+                                </div>
 
-                            {{-- Siswa --}}
-                            <div>
-                                <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Pilih Siswa</label>
-                                <select name="student_id" class="w-full rounded-xl border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 py-3 transition-all cursor-pointer">
-                                    <option value="">-- Cari Nama Siswa --</option>
-                                    @foreach($students as $student)
-                                        <option value="{{ $student->id }}" {{ old('student_id') == $student->id ? 'selected' : '' }}>
-                                            {{ $student->name }} — ({{ $student->classroom->name ?? 'No Class' }})
-                                        </option>
-                                    @endforeach
-                                </select>
-                                @error('student_id') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
-                            </div>
-
-                            {{-- Kategori --}}
-                            <div class="md:col-span-2">
-                                <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Jenis Pelanggaran</label>
-                                <select name="violation_category_id" class="w-full rounded-xl border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 py-3 transition-all cursor-pointer">
-                                    <option value="">-- Pilih Kategori --</option>
-                                    @foreach($categories as $grup => $items)
-                                        <optgroup label="Grup {{ $grup }}">
-                                            @foreach($items as $item)
-                                                <option value="{{ $item->id }}" {{ old('violation_category_id') == $item->id ? 'selected' : '' }}>
-                                                    [{{ $item->kode }}] {{ $item->deskripsi }}
+                                {{-- PENCARIAN SISWA (MODIFIED) --}}
+                                <div class="md:col-span-2">
+                                    <label for="student_id" class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Cari Siswa (Nama / NIS / Kelas)</label>
+                                    
+                                    <select name="student_id" id="select-student" placeholder="Ketik Nama, NIS, atau Kelas..." autocomplete="off" required>
+                                        <option value="">Ketik untuk mencari...</option>
+                                        @foreach($classrooms as $classroom)
+                                            {{-- Kita loop per siswa, tapi kita tambahkan data extra di atribut data- --}}
+                                            @foreach($classroom->students as $student)
+                                                <option value="{{ $student->id }}" 
+                                                        data-nis="{{ $student->nis ?? '-' }}" 
+                                                        data-class="{{ $classroom->name }}"
+                                                        {{ old('student_id') == $student->id ? 'selected' : '' }}>
+                                                    {{ $student->name }}
                                                 </option>
                                             @endforeach
-                                        </optgroup>
-                                    @endforeach
-                                </select>
-                                @error('violation_category_id') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
-                            </div>
-
-                            {{-- Kronologi --}}
-                            <div class="md:col-span-2">
-                                <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Kronologi / Catatan</label>
-                                <textarea name="catatan" rows="4" 
-                                          class="w-full rounded-xl border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 transition-all placeholder-gray-300"
-                                          placeholder="Deskripsikan kronologi kejadian secara detail...">{{ old('catatan') }}</textarea>
-                                @error('catatan') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
+                                        @endforeach
+                                    </select>
+                                    @error('student_id') <p class="text-red-500 text-xs mt-1 font-medium">{{ $message }}</p> @enderror
+                                </div>
                             </div>
                         </div>
 
-                        {{-- Upload Bukti dengan Preview --}}
-                        <div class="border-t border-gray-100 pt-6">
-                            <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-4">Bukti Foto (Opsional)</label>
-                            
-                            <div class="flex flex-col md:flex-row gap-6">
-                                
-                                {{-- Area Preview (Muncul jika ada foto) --}}
-                                <div x-show="photoPreview" class="relative group w-full md:w-48 h-48 bg-gray-100 rounded-2xl overflow-hidden border-2 border-gray-200 shadow-sm flex-shrink-0" style="display: none;">
-                                    <img :src="photoPreview" class="w-full h-full object-cover">
-                                    <button type="button" @click="photoPreview = null; fileName = null; $refs.fileInput.value = ''" 
-                                            class="absolute top-2 right-2 bg-red-500 text-white p-1 rounded-full hover:bg-red-600 transition shadow-sm">
-                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
-                                    </button>
+                        <hr class="border-gray-100">
+
+                        {{-- Section 2: Pelanggaran --}}
+                        <div>
+                            <h3 class="text-lg font-bold text-gray-900 flex items-center gap-2 mb-6">
+                                <span class="flex items-center justify-center w-8 h-8 rounded-full bg-red-100 text-red-600 text-xs">02</span>
+                                Detail
+                            </h3>
+
+                            <div class="space-y-6">
+                                <div>
+                                    <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Jenis Pelanggaran</label>
+                                    <select name="violation_category_id" class="block w-full border-gray-200 rounded-xl text-gray-900 focus:ring-2 focus:ring-red-500/20 focus:border-red-500 shadow-sm sm:text-sm" required>
+                                        <option value="" disabled selected>Pilih jenis...</option>
+                                        @foreach($categories as $cat)
+                                            <option value="{{ $cat->id }}" {{ old('violation_category_id') == $cat->id ? 'selected' : '' }}>
+                                                [{{ $cat->kode }}] {{ $cat->deskripsi }} ({{ $cat->grup }})
+                                            </option>
+                                        @endforeach
+                                    </select>
                                 </div>
 
-                                {{-- Area Input Upload --}}
-                                <div class="flex-1" x-show="!photoPreview">
-                                    <div class="flex justify-center px-6 pt-10 pb-10 border-2 border-gray-300 border-dashed rounded-2xl hover:border-indigo-400 hover:bg-indigo-50/30 transition-all group cursor-pointer relative bg-gray-50/50">
-                                        <div class="space-y-2 text-center">
-                                            <div class="mx-auto h-12 w-12 text-gray-400 group-hover:text-indigo-500 transition-colors bg-white rounded-full flex items-center justify-center shadow-sm">
-                                                <svg class="h-6 w-6" stroke="currentColor" fill="none" viewBox="0 0 48 48">
-                                                    <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
-                                                </svg>
-                                            </div>
-                                            <div class="text-sm text-gray-600">
-                                                <label for="file-upload" class="relative cursor-pointer rounded-md font-medium text-indigo-600 hover:text-indigo-500 focus-within:outline-none">
-                                                    <span>Upload foto bukti</span>
-                                                    <input id="file-upload" x-ref="fileInput" name="bukti_foto" type="file" class="sr-only" @change="previewFile">
-                                                </label>
-                                                <p class="pl-1 inline">atau drag and drop</p>
-                                            </div>
-                                            <p class="text-xs text-gray-500">PNG, JPG, JPEG up to 10MB</p>
-                                        </div>
-                                        {{-- Overlay full click --}}
-                                        <label for="file-upload" class="absolute inset-0 cursor-pointer"></label>
-                                    </div>
+                                <div>
+                                    <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Catatan</label>
+                                    <textarea name="catatan" rows="3" class="block w-full border-gray-200 rounded-xl focus:ring-indigo-500/20 focus:border-indigo-500 shadow-sm sm:text-sm">{{ old('catatan') }}</textarea>
                                 </div>
 
-                                {{-- Info Filename saat preview aktif --}}
-                                <div x-show="photoPreview" class="flex-1 flex items-center text-sm text-gray-500 italic" style="display: none;">
-                                    <span class="mr-2">File terpilih:</span>
-                                    <span class="font-semibold text-gray-800" x-text="fileName"></span>
+                                <div>
+                                    <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Bukti Foto</label>
+                                    <input type="file" name="bukti_foto" accept="image/*" class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100 transition-colors">
                                 </div>
                             </div>
-                            @error('bukti_foto') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
                         </div>
 
-                        {{-- Buttons --}}
-                        <div class="flex justify-end gap-3 pt-6 border-t border-gray-100">
-                            <a href="{{ route('admin.student-violations.index') }}" class="px-6 py-3 bg-gray-100 text-gray-700 rounded-xl font-bold hover:bg-gray-200 transition-colors">
-                                Batal
-                            </a>
-                            <button type="submit" class="px-8 py-3 bg-indigo-600 text-white rounded-xl font-bold hover:bg-indigo-700 transition shadow-lg shadow-indigo-500/30 transform hover:-translate-y-0.5">
-                                Simpan Data
-                            </button>
+                        {{-- Action Buttons --}}
+                        <div class="pt-6 border-t border-gray-100 flex items-center justify-end gap-3">
+                            <a href="{{ route('admin.student-violations.index') }}" class="px-6 py-3 bg-white text-gray-700 font-bold rounded-xl border border-gray-200 hover:bg-gray-50">Batal</a>
+                            <button type="submit" class="px-8 py-3 bg-indigo-600 text-white font-bold rounded-xl hover:bg-indigo-700 shadow-lg shadow-indigo-500/30">Simpan</button>
                         </div>
                     </form>
                 </div>
             </div>
         </div>
     </div>
+
+    {{-- Script Tom Select --}}
+    <script src="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/js/tom-select.complete.min.js"></script>
+    <script>
+        new TomSelect("#select-student", {
+            create: false,
+            sortField: {
+                field: "text",
+                direction: "asc"
+            },
+            // Field apa saja yang bisa dicari (sesuai data attribute di option)
+            searchField: ['text', 'nis', 'class'], 
+            plugins: ['clear_button'],
+            
+            // Kustomisasi tampilan dropdown agar muncul NIS dan Kelas
+            render: {
+                option: function(data, escape) {
+                    return '<div class="flex justify-between items-center py-1">' +
+                        '<div>' +
+                            '<span class="font-bold text-gray-800 block">' + escape(data.text) + '</span>' +
+                            '<span class="text-xs text-gray-400">NIS: ' + escape(data.nis) + '</span>' +
+                        '</div>' +
+                        '<span class="text-xs font-semibold bg-gray-100 text-gray-600 px-2 py-1 rounded">' + escape(data.class) + '</span>' +
+                    '</div>';
+                },
+                item: function(data, escape) {
+                    return '<div>' + escape(data.text) + ' <span class="text-gray-400 text-xs">(' + escape(data.class) + ')</span></div>';
+                }
+            }
+        });
+    </script>
 </x-app-layout>

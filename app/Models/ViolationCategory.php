@@ -14,4 +14,11 @@ class ViolationCategory extends Model
         'kode',
         'deskripsi',
     ];
+
+
+
+    public function violations()
+    {
+        return $this->hasMany(Violation::class);
+    }
 }

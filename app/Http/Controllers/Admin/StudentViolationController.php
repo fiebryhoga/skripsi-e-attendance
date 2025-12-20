@@ -5,65 +5,71 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Violation;
-use App\Models\Student;
 use App\Models\ViolationCategory;
+use App\Models\Classroom;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
-use App\Enums\UserRole;
 
 class StudentViolationController extends Controller
 {
-    // Pastikan hanya Admin & Tatib yang bisa akses
-    public function __construct()
-    {
-        // Alternatif middleware check bisa disini atau di Route
-    }
-
+    /**
+     * Menampilkan daftar pelanggaran dengan fitur pencarian.
+     */
     public function index(Request $request)
     {
-        // Fitur Pencarian & Filter
         $query = Violation::with(['student.classroom', 'category', 'reporter'])
-            ->orderBy('tanggal', 'desc')
-            ->orderBy('created_at', 'desc');
+            ->latest('tanggal')
+            ->latest('created_at');
 
-        // Cari berdasarkan Nama Siswa
-        if ($request->has('search')) {
-            $query->whereHas('student', function($q) use ($request) {
-                $q->where('name', 'like', '%' . $request->search . '%');
+        if ($request->has('search') && $request->search != '') {
+            $search = $request->search;
+            $query->whereHas('student', function($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                  ->orWhereHas('classroom', function($sq) use ($search) {
+                      $sq->where('name', 'like', "%{$search}%");
+                  });
             });
         }
 
-        $violations = $query->paginate(10); // Pagination
+        $violations = $query->paginate(10)->withQueryString();
 
         return view('admin.violations.index', compact('violations'));
     }
 
+    /**
+     * Menampilkan form input pelanggaran.
+     */
     public function create()
     {
-        // Ambil data siswa dikelompokkan per kelas untuk dropdown
-        $classrooms = \App\Models\Classroom::with(['students' => function($q) {
+        // Dropdown Siswa (Group per Kelas)
+        $classrooms = Classroom::with(['students' => function($q) {
             $q->orderBy('name');
         }])->orderBy('name')->get();
 
-        $categories = ViolationCategory::orderBy('points')->get();
+        // Dropdown Kategori
+        $categories = ViolationCategory::orderBy('grup')
+                        ->orderBy('kode')
+                        ->get();
 
         return view('admin.violations.create', compact('classrooms', 'categories'));
     }
 
+    /**
+     * Menyimpan data pelanggaran baru.
+     */
     public function store(Request $request)
     {
         $request->validate([
             'student_id' => 'required|exists:students,id',
             'violation_category_id' => 'required|exists:violation_categories,id',
             'tanggal' => 'required|date',
-            'catatan' => 'nullable|string',
-            'bukti_foto' => 'nullable|image|max:2048', // Max 2MB
+            'catatan' => 'nullable|string|max:500',
+            'bukti_foto' => 'nullable|image|mimes:jpg,jpeg,png|max:5120', // Max 5MB
         ]);
 
-        $data = $request->all();
-        $data['user_id'] = Auth::id(); // Pelapor adalah user yang login
+        $data = $request->only(['student_id', 'violation_category_id', 'tanggal', 'catatan']);
+        $data['user_id'] = Auth::id();
 
-        // Handle Upload Foto
         if ($request->hasFile('bukti_foto')) {
             $data['bukti_foto'] = $request->file('bukti_foto')->store('evidence', 'public');
         }
@@ -71,17 +77,72 @@ class StudentViolationController extends Controller
         Violation::create($data);
 
         return redirect()->route('admin.student-violations.index')
-            ->with('success', 'Pelanggaran berhasil dicatat.');
+            ->with('success', 'Data pelanggaran berhasil dicatat.');
     }
 
-    public function destroy(Violation $studentViolation)
+    /**
+     * Menampilkan form edit data.
+     */
+    public function edit($id)
     {
-        // Hapus file foto jika ada
-        if ($studentViolation->bukti_foto) {
-            Storage::disk('public')->delete($studentViolation->bukti_foto);
+        $violation = Violation::findOrFail($id);
+
+        $classrooms = Classroom::with(['students' => function($q) {
+            $q->orderBy('name');
+        }])->orderBy('name')->get();
+
+        $categories = ViolationCategory::orderBy('grup')
+                        ->orderBy('kode')
+                        ->get();
+
+        return view('admin.violations.edit', compact('violation', 'classrooms', 'categories'));
+    }
+
+    /**
+     * Memperbarui data pelanggaran.
+     */
+    public function update(Request $request, $id)
+    {
+        $violation = Violation::findOrFail($id);
+
+        $request->validate([
+            'student_id' => 'required|exists:students,id',
+            'violation_category_id' => 'required|exists:violation_categories,id',
+            'tanggal' => 'required|date',
+            'catatan' => 'nullable|string|max:500',
+            'bukti_foto' => 'nullable|image|mimes:jpg,jpeg,png|max:5120',
+        ]);
+
+        $data = $request->only(['student_id', 'violation_category_id', 'tanggal', 'catatan']);
+
+        // Handle Foto Baru
+        if ($request->hasFile('bukti_foto')) {
+            // Hapus foto lama jika ada
+            if ($violation->bukti_foto && Storage::disk('public')->exists($violation->bukti_foto)) {
+                Storage::disk('public')->delete($violation->bukti_foto);
+            }
+            // Simpan foto baru
+            $data['bukti_foto'] = $request->file('bukti_foto')->store('evidence', 'public');
         }
 
-        $studentViolation->delete();
+        $violation->update($data);
+
+        return redirect()->route('admin.student-violations.index')
+            ->with('success', 'Data pelanggaran berhasil diperbarui.');
+    }
+
+    /**
+     * Menghapus data pelanggaran.
+     */
+    public function destroy($id)
+    {
+        $violation = Violation::findOrFail($id);
+
+        if ($violation->bukti_foto && Storage::disk('public')->exists($violation->bukti_foto)) {
+            Storage::disk('public')->delete($violation->bukti_foto);
+        }
+
+        $violation->delete();
 
         return redirect()->back()->with('success', 'Data pelanggaran dihapus.');
     }

@@ -12,8 +12,8 @@ use App\Http\Controllers\Admin\ScheduleController;
 use App\Http\Controllers\ViolationCategoryController;
 use App\Http\Controllers\Admin\StudentAttendanceController;
 use App\Http\Controllers\Admin\StudentViolationController;
+use App\Http\Controllers\ResetDataController;
 // TAMBAHAN PENTING DI SINI:
-use App\Http\Controllers\ViolationController; 
 use App\Http\Controllers\NotificationController;
 
 Route::get('/', function () {
@@ -42,6 +42,15 @@ Route::middleware('auth')->group(function () {
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
     Route::patch('/profile/avatar', [ProfileController::class, 'updateAvatar'])->name('profile.avatar');
+
+
+
+    // Route untuk menampilkan halaman setting (jika belum ada)
+    Route::get('/settings', [ResetDataController::class, 'index'])->name('settings.index');
+
+    // Route KHUSUS untuk aksi reset data
+    Route::delete('/settings/reset-database', [ResetDataController::class, 'destroy'])
+        ->name('settings.reset');
 });
 
 /*
@@ -82,7 +91,8 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
     // URL: /admin/student-violations
     // Route Name: admin.student-violations.*
     // Kita ganti nama routenya agar tidak bentrok sama sekali dengan kategori
-    Route::resource('student-violations', ViolationController::class);
+    // Route::resource('student-violations', ViolationController::class);
+    Route::resource('student-violations', StudentViolationController::class);
 
     
     // ... di dalam group prefix admin
