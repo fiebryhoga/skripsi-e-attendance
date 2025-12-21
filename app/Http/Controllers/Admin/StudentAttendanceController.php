@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
+use Carbon\Carbon;
 use App\Http\Controllers\Controller;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Exports\AttendanceRecapExport;
@@ -9,11 +10,11 @@ use Illuminate\Support\Facades\DB;
 use App\Models\Classroom;
 use App\Models\Student;
 use App\Models\StudentAttendance;
+use App\Services\WhatsAppService;
 use App\Enums\UserRole;
 use App\Models\Schedule;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Carbon\Carbon;
 
 class StudentAttendanceController extends Controller
 {
@@ -133,16 +134,13 @@ class StudentAttendanceController extends Controller
     }
 
     // 4. Simpan Data
-    public function store(Request $request, Classroom $classroom, Schedule $schedule)
+    public function store(Request $request, Classroom $classroom, Schedule $schedule, WhatsAppService $waService)
     {
-
         $user = Auth::user();
         
-        // Security Check
         if (! $user->hasRole(UserRole::ADMIN) && $schedule->user_id != $user->id) {
             abort(403);
         }
-
 
         $request->validate([
             'date' => 'required|date',
@@ -152,26 +150,89 @@ class StudentAttendanceController extends Controller
         $date = $request->date;
         $attendances = $request->attendances;
 
+        // --- 1. DATA WALI KELAS & FORMAT WAKTU ---
+        $classroom->load('teacher'); 
+        $waliKelas = $classroom->teacher; 
+        $nomorWaliKelas = ($waliKelas && !empty($waliKelas->phone)) ? $waliKelas->phone : null; 
+
+        Carbon::setLocale('id'); 
+        $hariTanggal = Carbon::parse($date)->translatedFormat('l, d F Y'); 
+        
+        $jamMulai = $schedule->jam_mulai;     
+        $jamSelesai = $schedule->jam_selesai; 
+        $infoJam = ($jamMulai == $jamSelesai) ? "Jam pelajaran ke $jamMulai" : "Jam pelajaran ke $jamMulai - $jamSelesai";
+
+        // --- 2. LOOP & LOGIC ---
         foreach ($attendances as $studentId => $data) {
+            
+            // A. AMBIL STATUS LAMA (Sebelum Update)
+            // Kita cari dulu apakah data presensi untuk siswa ini, tanggal ini, mapel ini SUDAH ADA?
+            $existingAttendance = StudentAttendance::where('student_id', $studentId)
+                                    ->where('date', $date)
+                                    ->where('schedule_id', $schedule->id)
+                                    ->first();
+
+            // Jika belum ada, status lamanya kita anggap null
+            $oldStatus = $existingAttendance ? $existingAttendance->status : null;
+            $newStatus = $data['status'];
+
+            // B. SIMPAN / UPDATE KE DATABASE
             StudentAttendance::updateOrCreate(
                 [
                     'student_id' => $studentId,
                     'date' => $date,
-                    'schedule_id' => $schedule->id, // Kunci Utama Tambahan
+                    'schedule_id' => $schedule->id,
                 ],
                 [
                     'classroom_id' => $classroom->id,
-                    'status' => $data['status'],
+                    'status' => $newStatus,
                     'note' => $data['note'] ?? null,
                 ]
             );
+
+            // C. LOGIKA ANTI SPAM WA
+            // Syarat Kirim:
+            // 1. Status barunya harus Alpha atau Bolos
+            // 2. Statusnya HARUS BERUBAH dari sebelumnya.
+            //    (Contoh: Dari 'Hadir' jadi 'Alpha' -> KIRIM)
+            //    (Contoh: Dari 'Alpha' jadi 'Alpha' -> JANGAN KIRIM, cuma update note mungkin)
+            
+            if (in_array($newStatus, ['Alpha', 'Bolos']) && $newStatus !== $oldStatus) {
+                
+                $student = Student::find($studentId);
+
+                // --- Kirim ke ORTU ---
+                if ($student && !empty($student->phone_parent)) { 
+                    $msgOrtu = $waService->formatAttendanceMessage(
+                        $student->name,
+                        $newStatus,
+                        $schedule->subject->name,
+                        $hariTanggal,
+                        $infoJam
+                    );
+                    $waService->send($student->phone_parent, $msgOrtu);
+                }
+
+                // --- Kirim ke WALI KELAS ---
+                if ($nomorWaliKelas) {
+                    $msgGuru = $waService->formatTeacherMessage(
+                        $student->name,
+                        $newStatus,
+                        $classroom->name,
+                        $schedule->subject->name,
+                        $hariTanggal,
+                        $infoJam
+                    );
+                    $waService->send($nomorWaliKelas, $msgGuru);
+                }
+            }
         }
 
         return redirect()->route('admin.attendances.create', [
             'classroom' => $classroom->id, 
             'schedule' => $schedule->id, 
             'date' => $date
-        ])->with('success', 'Presensi mapel ' . $schedule->subject->name . ' berhasil disimpan.');
+        ])->with('success', 'Presensi disimpan.');
     }
 
     public function recap(Request $request)
@@ -373,8 +434,7 @@ class StudentAttendanceController extends Controller
         // 2. Ambil List Siswa beserta Status Presensinya (Baris Data)
         $students = Student::where('classroom_id', $classroomId)
             ->orderBy('name')
-            // Eager Load absensi HANYA untuk mapel dan tanggal yang dipilih
-            // (Penting: agar absensi mapel Biologi tidak muncul di rekap Matematika)
+            
             ->with(['attendances' => function($q) use ($subjectId, $startDate, $endDate) {
                 $q->whereHas('schedule', function($subQ) use ($subjectId) {
                     $subQ->where('subject_id', $subjectId);

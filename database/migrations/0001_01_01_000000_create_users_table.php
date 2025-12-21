@@ -6,24 +6,23 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
     public function up(): void
     {
         Schema::create('users', function (Blueprint $table) {
-
-            $table->id();
-            $table->string('name');
+            $table->id(); // KEMBALI KE ID
+            
+            // NIP: Wajib diisi & Tidak boleh kembar, tapi bukan Primary Key
             $table->string('nip')->unique(); 
-            $table->string('email')->unique()->nullable();
+            
+            $table->string('name');
+            $table->string('email')->nullable();
             $table->json('roles')->nullable();
+            $table->string('phone')->nullable();
             $table->string('avatar')->nullable();
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
             $table->rememberToken();
             $table->timestamps();
-            
         });
 
         Schema::create('password_reset_tokens', function (Blueprint $table) {
@@ -34,7 +33,10 @@ return new class extends Migration
 
         Schema::create('sessions', function (Blueprint $table) {
             $table->string('id')->primary();
-            $table->foreignId('user_id')->nullable()->index();
+            
+            // KEMBALIKAN KE FOREIGN ID (Integer)
+            $table->foreignId('user_id')->nullable()->index(); 
+            
             $table->string('ip_address', 45)->nullable();
             $table->text('user_agent')->nullable();
             $table->longText('payload');
@@ -42,9 +44,6 @@ return new class extends Migration
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
         Schema::dropIfExists('users');

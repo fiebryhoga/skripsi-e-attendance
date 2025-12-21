@@ -32,24 +32,24 @@ class UserSeeder extends Seeder
             'roles' => [UserRole::GURU_MAPEL, UserRole::GURU_TATIB], 
         ]);
 
-        // 3. GENERATE 15 GURU LAINNYA
-        for ($i = 1; $i <= 15; $i++) {
+        // // 3. GENERATE 15 GURU LAINNYA
+        // for ($i = 1; $i <= 15; $i++) {
             
-            // Default semua adalah Guru Mapel (Punya Jadwal Mengajar)
-            $roles = [UserRole::GURU_MAPEL]; 
+        //     // Default semua adalah Guru Mapel (Punya Jadwal Mengajar)
+        //     $roles = [UserRole::GURU_MAPEL]; 
 
-            // Guru 1-5 diberi tugas tambahan Wali Kelas
-            if ($i <= 5) {
-                $roles[] = UserRole::WALI_KELAS; 
-            }
+        //     // Guru 1-5 diberi tugas tambahan Wali Kelas
+        //     if ($i <= 5) {
+        //         $roles[] = UserRole::WALI_KELAS; 
+        //     }
 
-            User::create([
-                'name' => $faker->firstName . ' ' . $faker->lastName . ', S.Pd', 
-                'email' => "guru{$i}@sman1.sch.id", 
-                'password' => Hash::make('password'),
-                'nip' => $faker->unique()->numerify('19##########00##'), 
-                'roles' => $roles,
-            ]);
-        }
+        //     User::create([
+        //         'name' => $faker->firstName . ' ' . $faker->lastName . ', S.Pd', 
+        //         'email' => "guru{$i}@sman1.sch.id", 
+        //         'password' => Hash::make('password'),
+        //         'nip' => $faker->unique()->numerify('19##########00##'), 
+        //         'roles' => $roles,
+        //     ]);
+        // }
     }
 }

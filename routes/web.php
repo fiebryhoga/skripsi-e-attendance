@@ -13,16 +13,11 @@ use App\Http\Controllers\ViolationCategoryController;
 use App\Http\Controllers\Admin\StudentAttendanceController;
 use App\Http\Controllers\Admin\StudentViolationController;
 use App\Http\Controllers\ResetDataController;
-// TAMBAHAN PENTING DI SINI:
 use App\Http\Controllers\NotificationController;
 
 Route::get('/', function () {
     return view('welcome');
 });
-
-// Route::get('/dashboard', function () {
-//     return view('dashboard');
-// })->middleware(['auth', 'verified'])->name('dashboard');
 
 Route::get('/dashboard', [DashboardController::class, 'index'])
     ->middleware(['auth', 'verified'])
@@ -43,9 +38,7 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
     Route::patch('/profile/avatar', [ProfileController::class, 'updateAvatar'])->name('profile.avatar');
 
-
-
-    // Route untuk menampilkan halaman setting (jika belum ada)
+    // Route untuk menampilkan halaman setting
     Route::get('/settings', [ResetDataController::class, 'index'])->name('settings.index');
 
     // Route KHUSUS untuk aksi reset data
@@ -65,18 +58,19 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
     Route::get('students/template', [StudentController::class, 'downloadTemplate'])->name('students.template');
     Route::resource('students', StudentController::class);
 
+    // --- MANAJEMEN GURU (UPDATED) ---
+    // Saya taruh disini agar rapi dan nama routenya jadi 'admin.teachers.template'
+    Route::get('teachers/template', [TeacherController::class, 'downloadTemplate'])->name('teachers.template');
+    Route::post('teachers/import', [TeacherController::class, 'import'])->name('teachers.import');
+    Route::resource('teachers', TeacherController::class);
+
     // --- MANAJEMEN KELAS ---
     Route::resource('classrooms', ClassroomController::class)->only(['index', 'show', 'update']);
     Route::post('classrooms/{classroom}/assign-student', [ClassroomController::class, 'assignStudent'])->name('classrooms.assign-student');
     Route::put('students/{student}/transfer', [ClassroomController::class, 'transferStudent'])->name('students.transfer');
     Route::delete('students/{student}/release', [ClassroomController::class, 'releaseStudent'])->name('students.release');
 
-    // --- MANAJEMEN GURU ---
-    Route::resource('teachers', TeacherController::class);
-
     // --- KATEGORI PELANGGARAN (MASTER DATA) ---
-    // URL: /admin/violation-categories
-    // Route Name: admin.violations.index (Sesuai Sidebar)
     Route::resource('violation-categories', ViolationCategoryController::class)
      ->names([
          'index' => 'violations.index',
@@ -88,56 +82,33 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
      ]);
 
     // --- PENCATATAN PELANGGARAN SISWA (TRANSAKSI) ---
-    // URL: /admin/student-violations
-    // Route Name: admin.student-violations.*
-    // Kita ganti nama routenya agar tidak bentrok sama sekali dengan kategori
-    // Route::resource('student-violations', ViolationController::class);
     Route::resource('student-violations', StudentViolationController::class);
 
+    // --- MATA PELAJARAN ---
+    Route::resource('subjects', SubjectController::class)->except(['create', 'show', 'edit']);
     
-    // ... di dalam group prefix admin
-    Route::resource('subjects', \App\Http\Controllers\Admin\SubjectController::class)->except(['create', 'show', 'edit']);
-    
-
-    // Halaman Index (Pilih Kelas)
+    // --- JADWAL PELAJARAN ---
     Route::get('schedules', [ScheduleController::class, 'index'])->name('schedules.index');
-
-    // Halaman Detail Jadwal per Kelas
     Route::get('schedules/{classroom}', [ScheduleController::class, 'show'])->name('schedules.show');
-
-    // Simpan Jadwal
     Route::post('schedules/{classroom}', [ScheduleController::class, 'store'])->name('schedules.store');
-
-    // Hapus Jadwal
     Route::delete('schedules/{schedule}', [ScheduleController::class, 'destroy'])->name('schedules.destroy');
 
-    // REKAP (Taruh paling atas di blok Presensi)
+    // --- PRESENSI (ATTENDANCE) ---
+    // Rekap
     Route::get('attendances/recap', [StudentAttendanceController::class, 'recap'])->name('attendances.recap');
+    Route::get('attendances/recap/download', [StudentAttendanceController::class, 'downloadRecap'])->name('attendances.recap.download');
+    
+    // API Ajax untuk Dropdown Mapel
+    Route::get('api/subjects/{classroom}', [StudentAttendanceController::class, 'getSubjectsByClassroom'])->name('api.subjects.by.classroom');
 
-    // Halaman Pilih Kelas
+    // Flow Input Presensi
     Route::get('attendances', [StudentAttendanceController::class, 'index'])->name('attendances.index');
-
-    // Presensi: Halaman Pilih Mapel di Tanggal Tertentu
-    // Parameter {classroom} sesuai dengan yang diharapkan controller method show()
     Route::get('attendances/{classroom}', [StudentAttendanceController::class, 'show'])->name('attendances.show');
-
-    // Presensi: Input Absen Per Mapel
     Route::get('attendances/{classroom}/schedule/{schedule}', [StudentAttendanceController::class, 'create'])->name('attendances.create');
-
-    // Presensi: Simpan Absen
     Route::post('attendances/{classroom}/schedule/{schedule}', [StudentAttendanceController::class, 'store'])->name('attendances.store');
 
-    Route::get('api/subjects/{classroom}', [StudentAttendanceController::class, 'getSubjectsByClassroom'])
-    ->name('api.subjects.by.classroom');
-
-    // Download Excel
-    Route::get('attendances/recap/download', [StudentAttendanceController::class, 'downloadRecap'])
-        ->name('attendances.recap.download');
-
-    // MONITORING WALI KELAS
+    // --- MONITORING WALI KELAS ---
     Route::get('/homeroom', [HomeroomController::class, 'index'])->name('homeroom.index');
-
-    Route::resource('student-violations', StudentViolationController::class);
 
 });
 

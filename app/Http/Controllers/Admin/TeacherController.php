@@ -10,6 +10,9 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rules\Enum;
 use Illuminate\Pagination\LengthAwarePaginator;
+use Maatwebsite\Excel\Facades\Excel;
+use App\Exports\TeacherTemplateExport;
+use App\Imports\TeachersImport;
 
 class TeacherController extends Controller
 {
@@ -24,7 +27,8 @@ class TeacherController extends Controller
             $query->where(function($q) use ($search) {
                 $q->where('name', 'like', "%{$search}%")
                   ->orWhere('nip', 'like', "%{$search}%")
-                  ->orWhere('email', 'like', "%{$search}%");
+                  ->orWhere('email', 'like', "%{$search}&")
+                  ->orWhere('phone', 'like', "%{$search}%");
             });
         }
 
@@ -76,6 +80,7 @@ class TeacherController extends Controller
             'roles' => 'required|array', // Harus array
             'roles.*' => [new Enum(UserRole::class)], // Tiap item harus valid Enum
             'avatar' => 'nullable|image|max:2048',
+            'phone' => 'nullable|string|max:20',
         ]);
 
         $data = $request->except(['avatar', 'password']);
@@ -105,6 +110,7 @@ class TeacherController extends Controller
             'roles' => 'required|array',
             'roles.*' => [new Enum(UserRole::class)],
             'avatar' => 'nullable|image|max:2048',
+            'phone' => 'nullable|string|max:20',
         ]);
 
         $data = $request->except(['avatar', 'password', 'roles']); // Roles kita handle manual biar aman
@@ -131,5 +137,31 @@ class TeacherController extends Controller
         if ($teacher->avatar) Storage::disk('public')->delete($teacher->avatar);
         $teacher->delete();
         return back()->with('success', 'Data guru berhasil dihapus');
+    }
+
+    public function downloadTemplate()
+    {
+        return Excel::download(new TeacherTemplateExport, 'template_data_guru.xlsx');
+    }
+
+    // 2. PROSES IMPORT
+    public function import(Request $request)
+    {
+        $request->validate([
+            'file' => 'required|mimes:xlsx,xls,csv'
+        ]);
+
+        try {
+            Excel::import(new TeachersImport, $request->file('file'));
+            
+            return redirect()->back()->with('success', 'Data Guru berhasil diimport!');
+        } catch (\Maatwebsite\Excel\Validators\ValidationException $e) {
+            $failures = $e->failures();
+            $errorMsg = "Gagal Import pada Baris ke-" . $failures[0]->row() . ": " . $failures[0]->errors()[0];
+            
+            return redirect()->back()->with('error', $errorMsg);
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
+        }
     }
 }
