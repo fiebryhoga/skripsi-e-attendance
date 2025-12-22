@@ -16,7 +16,7 @@
                     <h4 class="font-bold text-gray-800 group-hover:text-indigo-600 transition-colors text-sm" title="{{ $student->name }}">
                         {{ Str::limit($student->name, 25, '...') }}
                     </h4>
-                    <p class="text-xs text-gray-400">No. Ortu +62 {{ $student->phone_parent ?? '-' }}</p>
+                    <p class="text-xs text-gray-400">No. Ortu {{ $student->phone_parent ?? '-' }}</p>
                 </div>
             </div>
         </td>

@@ -16,7 +16,7 @@ use App\Http\Controllers\ResetDataController;
 use App\Http\Controllers\NotificationController;
 
 Route::get('/', function () {
-    return view('welcome');
+    return redirect()->route('login');
 });
 
 Route::get('/dashboard', [DashboardController::class, 'index'])
@@ -25,90 +25,115 @@ Route::get('/dashboard', [DashboardController::class, 'index'])
 
 /*
 |--------------------------------------------------------------------------
-| ROUTE GLOBAL (Auth User)
+| ROUTE GLOBAL (Semua User Login)
 |--------------------------------------------------------------------------
 */
 Route::middleware('auth')->group(function () {
     
-    Route::post('/notifications/mark-read', [NotificationController::class, 'markAsRead'])
-        ->name('notifications.markRead');
-
+    // Notifikasi & Profil boleh diakses semua
+    Route::post('/notifications/mark-read', [NotificationController::class, 'markAsRead'])->name('notifications.markRead');
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
     Route::patch('/profile/avatar', [ProfileController::class, 'updateAvatar'])->name('profile.avatar');
-
-    // Route untuk menampilkan halaman setting
-    Route::get('/settings', [ResetDataController::class, 'index'])->name('settings.index');
-
-    // Route KHUSUS untuk aksi reset data
-    Route::delete('/settings/reset-database', [ResetDataController::class, 'destroy'])
-        ->name('settings.reset');
+    
+    // PERBAIKAN: Route Settings & Reset SAYA PINDAHKAN KE GRUP ADMIN DI BAWAH
+    // Agar Guru biasa tidak bisa mereset database.
 });
 
 /*
 |--------------------------------------------------------------------------
-| ROUTE ADMIN
+| GROUP UTAMA (Prefix: admin)
 |--------------------------------------------------------------------------
 */
 Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () {
 
-    // --- MANAJEMEN SISWA ---
-    Route::post('students/import', [StudentController::class, 'import'])->name('students.import');
-    Route::get('students/template', [StudentController::class, 'downloadTemplate'])->name('students.template');
-    Route::resource('students', StudentController::class);
+    // ====================================================
+    // 1. KHUSUS ADMIN (FULL CONTROL)
+    // ====================================================
+    Route::middleware(['role:admin'])->group(function () {
+        
+        // Manajemen Master Data
+        Route::post('students/import', [StudentController::class, 'import'])->name('students.import');
+        Route::get('students/template', [StudentController::class, 'downloadTemplate'])->name('students.template');
+        Route::resource('students', StudentController::class);
 
-    // --- MANAJEMEN GURU (UPDATED) ---
-    // Saya taruh disini agar rapi dan nama routenya jadi 'admin.teachers.template'
-    Route::get('teachers/template', [TeacherController::class, 'downloadTemplate'])->name('teachers.template');
-    Route::post('teachers/import', [TeacherController::class, 'import'])->name('teachers.import');
-    Route::resource('teachers', TeacherController::class);
+        Route::get('teachers/template', [TeacherController::class, 'downloadTemplate'])->name('teachers.template');
+        Route::post('teachers/import', [TeacherController::class, 'import'])->name('teachers.import');
+        Route::resource('teachers', TeacherController::class);
 
-    // --- MANAJEMEN KELAS ---
-    Route::resource('classrooms', ClassroomController::class)->only(['index', 'show', 'update']);
-    Route::post('classrooms/{classroom}/assign-student', [ClassroomController::class, 'assignStudent'])->name('classrooms.assign-student');
-    Route::put('students/{student}/transfer', [ClassroomController::class, 'transferStudent'])->name('students.transfer');
-    Route::delete('students/{student}/release', [ClassroomController::class, 'releaseStudent'])->name('students.release');
+        // Kelas & Mapel
+        Route::resource('classrooms', ClassroomController::class)->only(['index', 'show', 'update']);
+        Route::post('classrooms/{classroom}/assign-student', [ClassroomController::class, 'assignStudent'])->name('classrooms.assign-student');
+        Route::put('students/{student}/transfer', [ClassroomController::class, 'transferStudent'])->name('students.transfer');
+        Route::delete('students/{student}/release', [ClassroomController::class, 'releaseStudent'])->name('students.release');
+        
+        Route::resource('subjects', SubjectController::class)->except(['create', 'show', 'edit']);
 
-    // --- KATEGORI PELANGGARAN (MASTER DATA) ---
-    Route::resource('violation-categories', ViolationCategoryController::class)
-     ->names([
-         'index' => 'violations.index',
-         'create' => 'violations.create',
-         'store' => 'violations.store',
-         'edit' => 'violations.edit',
-         'update' => 'violations.update',
-         'destroy' => 'violations.destroy',
-     ]);
+        // Jadwal
+        Route::get('schedules', [ScheduleController::class, 'index'])->name('schedules.index');
+        Route::get('schedules/{classroom}', [ScheduleController::class, 'show'])->name('schedules.show');
+        Route::post('schedules/{classroom}', [ScheduleController::class, 'store'])->name('schedules.store');
+        Route::delete('schedules/{schedule}', [ScheduleController::class, 'destroy'])->name('schedules.destroy');
 
-    // --- PENCATATAN PELANGGARAN SISWA (TRANSAKSI) ---
-    Route::resource('student-violations', StudentViolationController::class);
+        // SETTINGS & RESET DATABASE (PENTING: Hanya Admin)
+        // Saya pindahkan dari global ke sini
+        Route::get('/settings', [ResetDataController::class, 'index'])->name('settings.index');
+        Route::delete('/settings/reset-database', [ResetDataController::class, 'destroy'])->name('settings.reset');
+    });
 
-    // --- MATA PELAJARAN ---
-    Route::resource('subjects', SubjectController::class)->except(['create', 'show', 'edit']);
-    
-    // --- JADWAL PELAJARAN ---
-    Route::get('schedules', [ScheduleController::class, 'index'])->name('schedules.index');
-    Route::get('schedules/{classroom}', [ScheduleController::class, 'show'])->name('schedules.show');
-    Route::post('schedules/{classroom}', [ScheduleController::class, 'store'])->name('schedules.store');
-    Route::delete('schedules/{schedule}', [ScheduleController::class, 'destroy'])->name('schedules.destroy');
 
-    // --- PRESENSI (ATTENDANCE) ---
-    // Rekap
-    Route::get('attendances/recap', [StudentAttendanceController::class, 'recap'])->name('attendances.recap');
-    Route::get('attendances/recap/download', [StudentAttendanceController::class, 'downloadRecap'])->name('attendances.recap.download');
-    
-    // API Ajax untuk Dropdown Mapel
-    Route::get('api/subjects/{classroom}', [StudentAttendanceController::class, 'getSubjectsByClassroom'])->name('api.subjects.by.classroom');
+    // ====================================================
+    // 2. ADMIN & GURU TATIB (KEDISIPLINAN)
+    // ====================================================
+    Route::middleware(['role:admin,guru_tatib'])->group(function () {
+        
+        
+        Route::resource('violation-categories', ViolationCategoryController::class)
+        ->names([
+            'index' => 'violations.index',
+            'create' => 'violations.create',
+            'store' => 'violations.store',
+            'edit' => 'violations.edit',
+            'update' => 'violations.update',
+            'destroy' => 'violations.destroy',
+        ]);
+        
+        // Input Pelanggaran Siswa
+        Route::resource('student-violations', StudentViolationController::class);
 
-    // Flow Input Presensi
-    Route::get('attendances', [StudentAttendanceController::class, 'index'])->name('attendances.index');
-    Route::get('attendances/{classroom}', [StudentAttendanceController::class, 'show'])->name('attendances.show');
-    Route::get('attendances/{classroom}/schedule/{schedule}', [StudentAttendanceController::class, 'create'])->name('attendances.create');
-    Route::post('attendances/{classroom}/schedule/{schedule}', [StudentAttendanceController::class, 'store'])->name('attendances.store');
+        
+    });
 
-    // --- MONITORING WALI KELAS ---
-    Route::get('/homeroom', [HomeroomController::class, 'index'])->name('homeroom.index');
+
+    // ====================================================
+    // 3. ADMIN, GURU MAPEL, WALI KELAS (AKADEMIK)
+    // ====================================================
+    // Semua guru perlu akses presensi (minimal lihat rekap)
+    Route::middleware(['role:admin,guru_mapel,wali_kelas,guru_tatib'])->group(function () {
+        
+        // Rekap Presensi
+        Route::get('attendances/recap', [StudentAttendanceController::class, 'recap'])->name('attendances.recap');
+        Route::get('attendances/recap/download', [StudentAttendanceController::class, 'downloadRecap'])->name('attendances.recap.download');
+        Route::get('api/subjects/{classroom}', [StudentAttendanceController::class, 'getSubjectsByClassroom'])->name('api.subjects.by.classroom');
+
+        // Flow Input Presensi
+        Route::get('attendances', [StudentAttendanceController::class, 'index'])->name('attendances.index');
+        Route::get('attendances/{classroom}', [StudentAttendanceController::class, 'show'])->name('attendances.show');
+        
+        // Khusus Input (Create/Store) biasanya hanya Admin & Guru Mapel yang punya jadwal
+        // Tapi kita filter di Controller saja (AuthorizeAccess), di sini kita buka akses rutenya
+        Route::get('attendances/{classroom}/schedule/{schedule}', [StudentAttendanceController::class, 'create'])->name('attendances.create');
+        Route::post('attendances/{classroom}/schedule/{schedule}', [StudentAttendanceController::class, 'store'])->name('attendances.store');
+    });
+
+
+    // ====================================================
+    // 4. KHUSUS WALI KELAS
+    // ====================================================
+    Route::middleware(['role:wali_kelas'])->group(function () {
+        Route::get('/homeroom', [HomeroomController::class, 'index'])->name('homeroom.index');
+    });
 
 });
 
