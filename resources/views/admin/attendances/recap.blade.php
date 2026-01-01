@@ -4,7 +4,7 @@
     <div class="py-6">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-8">
 
-            {{-- 1. CARD FILTER (Pilih Kelas & Tanggal) --}}
+            
             <div class="bg-white p-6 rounded-3xl shadow-sm border border-gray-100">
                 <h2 class="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
                     <svg class="w-5 h-5 text-indigo-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" /></svg>
@@ -12,10 +12,10 @@
                 </h2>
                 
                 <form method="GET" action="{{ route('admin.attendances.recap') }}" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 items-end">
-                    {{-- Input Kelas --}}
+                    
                     <div>
                         <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Kelas</label>
-                        {{-- TAMBAHKAN ID: classroom_select --}}
+                        
                         <select name="classroom_id" id="classroom_select" class="w-full rounded-xl border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 text-sm" required>
                             <option value="">-- Pilih Kelas --</option>
                             @foreach($classrooms as $c)
@@ -26,14 +26,14 @@
                         </select>
                     </div>
 
-                    {{-- Pilih Mapel --}}
+                    
                     <div>
                         <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Mata Pelajaran</label>
-                        {{-- TAMBAHKAN ID: subject_select --}}
+                        
                         <select name="subject_id" id="subject_select" class="w-full rounded-xl border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 text-sm bg-gray-50" required {{ request('classroom_id') ? '' : 'disabled' }}>
                             <option value="">-- Pilih Kelas Terlebih Dahulu --</option>
                             
-                            {{-- Loop ini hanya berjalan jika User sudah Submit (Reload), agar pilihan tidak hilang --}}
+                            
                             @foreach($subjects as $s)
                                 <option value="{{ $s->id }}" {{ request('subject_id') == $s->id ? 'selected' : '' }}>
                                     {{ $s->name }}
@@ -42,7 +42,7 @@
                         </select>
                     </div>
 
-                    {{-- Input Tanggal --}}
+                    
                     <div>
                         <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Dari Tanggal</label>
                         <input type="date" name="start_date" value="{{ request('start_date', date('Y-m-01')) }}" class="w-full rounded-xl border-gray-300 focus:border-indigo-500 text-sm" required>
@@ -60,9 +60,9 @@
                 </form>
             </div>
 
-            @if(request()->has('classroom_id'))
+            @if($selectedClassroom && $selectedSubject)
                 
-                {{-- HEADER LAPORAN --}}
+                
                 <div class="flex flex-col md:flex-row justify-between items-end border-b border-gray-200 pb-4">
                     <div>
                         <h3 class="font-extrabold text-2xl text-gray-800">Laporan Presensi Siswa</h3>
@@ -74,7 +74,7 @@
                             Periode: {{ \Carbon\Carbon::parse(request('start_date'))->translatedFormat('d F Y') }} - {{ \Carbon\Carbon::parse(request('end_date'))->translatedFormat('d F Y') }}
                         </p>
                     </div>
-                    {{-- GANTI TOMBOL LAMA DENGAN INI --}}
+                    
                     <a href="{{ route('admin.attendances.recap.download', request()->all()) }}" 
                     class="mt-4 md:mt-0 px-4 py-2 bg-green-600 text-white text-xs font-bold rounded-lg hover:bg-green-700 flex items-center gap-2 shadow-lg shadow-green-500/30 transition-all transform hover:-translate-y-0.5">
                         <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -84,7 +84,7 @@
                     </a>
                 </div>
 
-                {{-- 2. TABEL RINGKASAN (TOTAL ANGKA) --}}
+                
                 <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
                     <div class="px-6 py-3 bg-indigo-50 border-b border-indigo-100">
                         <h4 class="font-bold text-indigo-900 text-sm flex items-center gap-2">
@@ -108,7 +108,7 @@
                             <tbody class="divide-y divide-gray-50 text-sm">
                                 @foreach($students as $student)
                                     @php
-                                        // Hitung Total di PHP Blade langsung
+                                        
                                         $h = $student->attendances->where('status', 'Hadir')->count();
                                         $s = $student->attendances->where('status', 'Sakit')->count();
                                         $i = $student->attendances->where('status', 'Izin')->count();
@@ -138,7 +138,7 @@
                     </div>
                 </div>
 
-                {{-- 3. TABEL DETAIL HARIAN (DI BAWAHNYA) --}}
+                
                 <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden mt-8">
                     <div class="px-6 py-3 bg-gray-50 border-b border-gray-200">
                         <h4 class="font-bold text-gray-700 text-sm flex items-center gap-2">
@@ -154,7 +154,7 @@
                                     <th class="px-4 py-3 font-bold sticky left-0 bg-gray-100 z-10 w-10 border-r border-gray-200">No</th>
                                     <th class="px-4 py-3 font-bold sticky left-10 bg-gray-100 z-10 w-48 border-r border-gray-200 shadow-sm">Nama Siswa</th>
                                     
-                                    {{-- LOOP HEADER TANGGAL (DETAIL) --}}
+                                    
                                     @foreach($dates as $date)
                                         <th class="px-2 py-3 text-center min-w-[50px] border-r border-gray-200 bg-white">
                                             <div class="flex flex-col">
@@ -175,10 +175,10 @@
                                             {{ $student->name }}
                                         </td>
 
-                                        {{-- LOOP ISI DETAIL PER TANGGAL --}}
+                                        
                                         @foreach($dates as $date)
                                             @php
-                                                // Cari status pada tanggal spesifik ini
+                                                
                                                 $attn = $student->attendances->firstWhere('date', $date);
                                                 $status = $attn ? $attn->status : '-';
                                             @endphp
@@ -220,24 +220,24 @@
         const classSelect = document.getElementById('classroom_select');
         const subjectSelect = document.getElementById('subject_select');
 
-        // Event ketika Kelas dipilih/diubah
+        
         classSelect.addEventListener('change', function () {
             const classroomId = this.value;
 
-            // Reset Dropdown Mapel
+            
             subjectSelect.innerHTML = '<option value="">Sedang memuat...</option>';
             subjectSelect.disabled = true;
             subjectSelect.classList.add('bg-gray-50');
 
             if (classroomId) {
-                // Panggil API Laravel
+                
                 fetch(`/admin/api/subjects/${classroomId}`)
                     .then(response => response.json())
                     .then(data => {
-                        // Bersihkan opsi lama
+                        
                         subjectSelect.innerHTML = '<option value="">-- Pilih Mapel --</option>';
                         
-                        // Isi opsi baru dari JSON
+                        
                         if (data.length > 0) {
                             data.forEach(subject => {
                                 const option = document.createElement('option');
@@ -246,7 +246,7 @@
                                 subjectSelect.appendChild(option);
                             });
                             
-                            // Aktifkan Dropdown
+                            
                             subjectSelect.disabled = false;
                             subjectSelect.classList.remove('bg-gray-50');
                         } else {
@@ -258,7 +258,7 @@
                         subjectSelect.innerHTML = '<option value="">Gagal memuat mapel</option>';
                     });
             } else {
-                // Jika pilihan kelas dikosongkan lagi
+                
                 subjectSelect.innerHTML = '<option value="">-- Pilih Kelas Terlebih Dahulu --</option>';
                 subjectSelect.disabled = true;
                 subjectSelect.classList.add('bg-gray-50');

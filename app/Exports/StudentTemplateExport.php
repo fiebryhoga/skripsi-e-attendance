@@ -23,8 +23,8 @@ class StudentTemplateExport implements FromArray, WithHeadings, WithStyles, Shou
         return [
             [
                 '2024001',          
-                'CONTOH 1 (SILAHKAN DIHAPUS/GANTI)', // Nama diubah menjadi peringatan
-                'X-A',              // Kelas diubah sesuai request
+                'CONTOH 1 (SILAHKAN DIHAPUS/GANTI)', 
+                'X-A',              
                 'L',                
                 'Islam',            
                 '0051234567',       
@@ -33,8 +33,8 @@ class StudentTemplateExport implements FromArray, WithHeadings, WithStyles, Shou
             ],
             [
                 '2024002',
-                'CONTOH 2 (SILAHKAN DIHAPUS/GANTI)', // Nama diubah menjadi peringatan
-                'XI-J',             // Kelas diubah sesuai request
+                'CONTOH 2 (SILAHKAN DIHAPUS/GANTI)', 
+                'XI-J',             
                 'P',
                 'Islam',
                 '0059876543',
@@ -58,9 +58,6 @@ class StudentTemplateExport implements FromArray, WithHeadings, WithStyles, Shou
         ];
     }
 
-    /**
-     * Styling Sederhana
-     */
     public function styles(Worksheet $sheet)
     {
         return [
@@ -68,9 +65,6 @@ class StudentTemplateExport implements FromArray, WithHeadings, WithStyles, Shou
         ];
     }
 
-    /**
-     * Styling Lanjutan (Warna, Border, Alignment)
-     */
     public function registerEvents(): array
     {
         return [
@@ -79,7 +73,7 @@ class StudentTemplateExport implements FromArray, WithHeadings, WithStyles, Shou
                 $lastColumn = 'H'; 
                 $lastRow = $sheet->getHighestRow();
 
-                // Styling Header (Baris 1)
+                
                 $sheet->getStyle('A1:' . $lastColumn . '1')->applyFromArray([
                     'font' => [
                         'color' => ['argb' => 'FFFFFFFF'], 
@@ -101,10 +95,10 @@ class StudentTemplateExport implements FromArray, WithHeadings, WithStyles, Shou
                     ],
                 ]);
 
-                // Set tinggi baris header
+                
                 $sheet->getRowDimension(1)->setRowHeight(30);
 
-                // Styling Body (Baris 2 sampai akhir)
+                
                 $sheet->getStyle('A2:' . $lastColumn . $lastRow)->applyFromArray([
                     'borders' => [
                         'allBorders' => [
@@ -117,7 +111,7 @@ class StudentTemplateExport implements FromArray, WithHeadings, WithStyles, Shou
                     ],
                 ]);
                 
-                // Set tinggi baris data
+                
                 for ($i = 2; $i <= $lastRow; $i++) {
                     $sheet->getRowDimension($i)->setRowHeight(25);
                 }

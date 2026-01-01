@@ -1,7 +1,7 @@
 <aside class="fixed inset-y-0 left-0 z-50 w-64 bg-white border-r border-gray-200 transition-transform duration-300 ease-in-out transform lg:translate-x-0 lg:static lg:inset-0 flex flex-col"
     :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full'">
     
-    {{-- LOGO --}}
+    
     <div class="flex flex-col items-center justify-center h-32 border-b border-gray-100 bg-gray-50/30">
         <img src="{{ asset('assets/images/layouts/logo.png') }}" 
              alt="Logo SMAN 1 Malang" 
@@ -13,7 +13,7 @@
         </div>
     </div>
 
-    {{-- USER PROFILE SUMMARY --}}
+    
     <div class="px-6 py-6 border-b border-gray-100">
         <div class="flex items-center gap-3">
             <div class="relative">
@@ -32,9 +32,9 @@
 
     <nav class="flex-1 overflow-y-auto py-4 px-4 space-y-1">
         
-        {{-- ================================================= --}}
-        {{-- 1. DASHBOARD (SEMUA ROLE BISA LIHAT) --}}
-        {{-- ================================================= --}}
+        
+        
+        
         <a href="{{ route('dashboard') }}" 
            class="{{ request()->routeIs('dashboard') ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-500/30' : 'text-gray-600 hover:bg-indigo-50 hover:text-indigo-600' }} group flex items-center px-3 py-3 text-sm font-medium rounded-xl transition-all duration-200">
             <svg class="{{ request()->routeIs('dashboard') ? 'text-white' : 'text-gray-400 group-hover:text-indigo-600' }} mr-3 flex-shrink-0 h-5 w-5 transition-colors duration-200" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -43,9 +43,16 @@
             Dashboard
         </a>
 
-        {{-- ================================================= --}}
-        {{-- 2. KHUSUS ADMIN (MASTER DATA & JADWAL) --}}
-        {{-- ================================================= --}}
+        @if(Auth::user()->hasRole(\App\Enums\UserRole::ADMIN))
+            <a href="{{ route('admin.wa.connect') }}" target="_blank" 
+               class="text-gray-600 hover:bg-indigo-50 hover:text-indigo-600 group flex items-center px-3 py-3 text-sm font-medium rounded-xl transition-all duration-200">
+                <svg class="text-gray-400 group-hover:text-indigo-600 mr-3 flex-shrink-0 h-5 w-5 transition-colors duration-200" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981zm11.387-5.464c-.074-.124-.272-.198-.57-.347-.297-.149-1.758-.868-2.031-.967-.272-.099-.47-.149-.669.149-.198.297-.768.967-.941 1.165-.173.198-.347.223-.644.074-.297-.149-1.255-.462-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.521.151-.172.2-.296.3-.495.099-.198.05-.372-.025-.521-.075-.148-.669-1.611-.916-2.206-.242-.579-.487-.506-.669-.514-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.015-1.04 2.479 0 1.462 1.065 2.876 1.213 3.074.149.198 2.095 3.2 5.076 4.487.709.306 1.263.489 1.694.626.712.226 1.36.194 1.872.118.571-.084 1.758-.719 2.006-1.413.248-.695.248-1.289.173-1.414z"/>
+                </svg>
+                WhatsApp Gateway
+            </a>
+        @endif
+        
         @if(Auth::user()->hasRole(\App\Enums\UserRole::ADMIN))
             
             <div class="pt-6 pb-2 px-3 text-[10px] font-bold text-gray-400 uppercase tracking-widest">
@@ -97,21 +104,21 @@
             </a>
 
         @endif 
-        {{-- END IF ADMIN (Tutup Blok Admin Disini) --}}
+        
 
 
-        {{-- ================================================= --}}
-        {{-- 3. KEDISIPLINAN (ADMIN & TATIB) --}}
-        {{-- ================================================= --}}
-        {{-- BLOK INI SEKARANG DILUAR BLOK ADMIN, JADI TATIB BISA LIHAT --}}
+        
+        
+        
+        
         @if(Auth::user()->hasAnyRole([\App\Enums\UserRole::ADMIN, \App\Enums\UserRole::GURU_TATIB]))
             
             <div class="pt-6 pb-2 px-3 text-[10px] font-bold text-gray-400 uppercase tracking-widest">
                 Kedisiplinan
             </div>
 
-            {{-- Master Kategori Pelanggaran (Hanya Admin) --}}
-            {{-- @if(Auth::user()->hasRole(\App\Enums\UserRole::ADMIN)) --}}
+            
+            
                 <a href="{{ route('admin.violations.index') }}"
                 class="{{ request()->routeIs('admin.violations.*') ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-500/30' : 'text-gray-600 hover:bg-indigo-50 hover:text-indigo-600' }} group flex items-center px-3 py-3 text-sm font-medium rounded-xl transition-all duration-200">
                     <svg class="{{ request()->routeIs('admin.violations.*') ? 'text-white' : 'text-gray-400 group-hover:text-indigo-600' }} mr-3 flex-shrink-0 h-5 w-5 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -119,9 +126,9 @@
                     </svg>
                     Kategori Pelanggaran
                 </a>
-            {{-- @endif --}}
             
-            {{-- Pencatatan Pelanggaran Siswa (Admin & Tatib) --}}
+            
+            
             <a href="{{ route('admin.student-violations.index') }}" 
             class="{{ request()->routeIs('admin.student-violations.*') ? 'bg-red-600 text-white shadow-lg shadow-red-500/30' : 'text-gray-600 hover:bg-red-50 hover:text-red-600' }} group flex items-center px-3 py-3 text-sm font-medium rounded-xl transition-all duration-200">
                 <svg class="{{ request()->routeIs('admin.student-violations.*') ? 'text-white' : 'text-gray-400 group-hover:text-red-600' }} mr-3 flex-shrink-0 h-5 w-5 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -133,11 +140,11 @@
         @endif
 
 
-        {{-- ================================================= --}}
-        {{-- 4. PRESENSI & AKADEMIK (GURU & ADMIN) --}}
-        {{-- ================================================= --}}
         
-        {{-- Header Akademik jika belum muncul (Untuk Guru) --}}
+        
+        
+        
+        
         @if(!Auth::user()->hasRole(\App\Enums\UserRole::ADMIN))
             <div class="pt-6 pb-2 px-3 text-[10px] font-bold text-gray-400 uppercase tracking-widest">
                 Akademik
@@ -152,7 +159,7 @@
             Presensi Siswa
         </a>
 
-        {{-- MENU REKAP PRESENSI --}}
+        
         <a href="{{ route('admin.attendances.recap') }}" 
            class="{{ request()->routeIs('admin.attendances.recap') ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-500/30' : 'text-gray-600 hover:bg-indigo-50 hover:text-indigo-600' }} group flex items-center px-3 py-3 text-sm font-medium rounded-xl transition-all duration-200">
             <svg class="{{ request()->routeIs('admin.attendances.recap') ? 'text-white' : 'text-gray-400 group-hover:text-indigo-600' }} mr-3 flex-shrink-0 h-5 w-5 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -162,9 +169,9 @@
         </a>
 
 
-        {{-- ================================================= --}}
-        {{-- 5. KHUSUS WALI KELAS --}}
-        {{-- ================================================= --}}
+        
+        
+        
         @if(Auth::user()->hasRole(\App\Enums\UserRole::WALI_KELAS))
             
             <div class="pt-6 pb-2 px-3 text-[10px] font-bold text-gray-400 uppercase tracking-widest">
@@ -182,9 +189,9 @@
 
 
 
-        {{-- ================================================= --}}
-        {{-- 6. PENGATURAN SISTEM (KHUSUS ADMIN) --}}
-        {{-- ================================================= --}}
+        
+        
+        
         @if(Auth::user()->hasRole(\App\Enums\UserRole::ADMIN))
             
             <div class="pt-6 pb-2 px-3 text-[10px] font-bold text-gray-400 uppercase tracking-widest">
@@ -192,8 +199,9 @@
             </div>
 
             <a href="{{ route('admin.settings.index') }}"
-            class="{{ request()->routeIs('settings.*') ? 'bg-red-600 text-white shadow-lg shadow-red-500/30' : 'text-gray-600 hover:bg-red-50 hover:text-red-600' }} group flex items-center px-3 py-3 text-sm font-medium rounded-xl transition-all duration-200">
-                <svg class="{{ request()->routeIs('settings.*') ? 'text-white' : 'text-gray-400 group-hover:text-red-600' }} mr-3 flex-shrink-0 h-5 w-5 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            class="{{ request()->routeIs('admin.settings.*') ? 'bg-red-600 text-white shadow-lg shadow-red-500/30' : 'text-gray-600 hover:bg-red-50 hover:text-red-600' }} group flex items-center px-3 py-3 text-sm font-medium rounded-xl transition-all duration-200">
+                
+                <svg class="{{ request()->routeIs('admin.settings.*') ? 'text-white' : 'text-gray-400 group-hover:text-red-600' }} mr-3 flex-shrink-0 h-5 w-5 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                 </svg>
@@ -203,7 +211,7 @@
 
     </nav>
 
-    {{-- LOGOUT BUTTON --}}
+    
     <div class="p-4 border-t border-gray-100 bg-white">
         <form method="POST" action="{{ route('logout') }}">
             @csrf

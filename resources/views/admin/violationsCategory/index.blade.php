@@ -1,127 +1,109 @@
 <x-app-layout>
-    <x-slot name="header">Kategori Pelanggaran</x-slot>
-
     <div class="">
-        <div class="space-y-6">
+        <div class="">
             
-            {{-- Header + Tombol Tambah --}}
-            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+            
+            <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-10">
                 <div>
-                    <h2 class="text-2xl font-bold text-gray-800">
-                        Master Kategori Pelanggaran
-                    </h2>
-                    <p class="text-sm text-gray-500 mt-1">
-                        Daftar referensi jenis pelanggaran tata tertib sekolah.
-                    </p>
+                    <h2 class="text-3xl font-extrabold text-gray-900 tracking-tight">Master Kategori</h2>
+                    <p class="text-sm text-gray-500 mt-2">Daftar referensi jenis pelanggaran tata tertib.</p>
                 </div>
-                
                 <a href="{{ route('admin.violations.create') }}" 
-                   class="inline-flex items-center px-4 py-2 bg-indigo-600 border border-transparent rounded-xl font-semibold text-xs text-white uppercase tracking-widest hover:bg-indigo-700 focus:bg-indigo-700 active:bg-indigo-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition ease-in-out duration-150 shadow-lg shadow-indigo-500/30">
-                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                   class="inline-flex items-center px-6 py-3 bg-gradient-to-r from-orange-500 to-red-600 text-white font-bold rounded-xl hover:from-orange-600 hover:to-red-700 shadow-lg shadow-orange-500/30 transition-all transform hover:-translate-y-0.5">
+                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
                     Tambah Kategori
                 </a>
             </div>
 
-            {{-- Alert Sukses --}}
+            
             @if(session('success'))
-                <div class="bg-green-50 border-l-4 border-green-500 p-4 rounded-r-xl shadow-sm">
-                    <div class="flex">
-                        <div class="flex-shrink-0">
-                            <svg class="h-5 w-5 text-green-400" viewBox="0 0 20 20" fill="currentColor">
-                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
-                            </svg>
+                <div x-data="{ show: true }" x-show="show" x-transition class="mb-6 p-4 rounded-xl bg-green-50 border border-green-100 flex items-center justify-between shadow-sm">
+                    <div class="flex items-center gap-3">
+                        <div class="p-2 bg-green-100 rounded-lg text-green-600">
+                            <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg>
                         </div>
-                        <div class="ml-3">
-                            <p class="text-sm text-green-700">{{ session('success') }}</p>
-                        </div>
+                        <p class="text-sm font-bold text-green-800">{{ session('success') }}</p>
                     </div>
+                    <button @click="show = false" class="text-green-400 hover:text-green-600">
+                        <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+                    </button>
                 </div>
             @endif
 
-            {{-- Content: Looping per Grup (A, B, C) --}}
-            @forelse($groupedViolations as $group => $violations)
-                <div class="bg-white overflow-hidden shadow-sm sm:rounded-xl border border-gray-100">
-                    
-                    {{-- Header Kartu per Grup --}}
-                    <div class="px-6 py-4 border-b border-gray-100 bg-gray-50/50 flex items-center justify-between">
-                        <div class="flex items-center gap-3">
-                            <span class="flex items-center justify-center w-8 h-8 rounded-full bg-indigo-100 text-indigo-700 font-bold text-sm ring-4 ring-white">
-                                {{ $group }}
-                            </span>
-                            <h3 class="font-semibold text-gray-800">
-                                @if($group == 'A') Pelanggaran Ringan
-                                @elseif($group == 'B') Pelanggaran Sedang
-                                @elseif($group == 'C') Pelanggaran Berat
-                                @else Grup Lainnya @endif
-                            </h3>
+            
+            <div class="space-y-8">
+                @forelse($groupedViolations as $group => $violations)
+                    <div class="bg-white rounded-3xl shadow-xl shadow-gray-200/50 border border-gray-100 overflow-hidden">
+                        
+                        
+                        <div class="px-8 py-5 border-b border-gray-50 bg-gray-50/30 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                            <div class="flex items-center gap-4">
+                                <span class="flex items-center justify-center w-12 h-12 rounded-2xl bg-gradient-to-br from-orange-100 to-orange-50 text-orange-600 font-extrabold text-lg shadow-inner">
+                                    {{ $group }}
+                                </span>
+                                <div>
+                                    <h3 class="font-bold text-gray-900 text-lg">
+                                        @if($group == 'A') Pelanggaran Ringan
+                                        @elseif($group == 'B') Pelanggaran Sedang
+                                        @elseif($group == 'C') Pelanggaran Berat
+                                        @else Grup Lainnya @endif
+                                    </h3>
+                                    <span class="text-xs font-medium text-gray-500 uppercase tracking-wider">Total {{ count($violations) }} Item</span>
+                                </div>
+                            </div>
                         </div>
-                        <span class="text-xs font-medium text-gray-500 bg-gray-100 px-2.5 py-1 rounded-full">
-                            {{ count($violations) }} Item
-                        </span>
-                    </div>
 
-                    {{-- Tabel --}}
-                    <div class="overflow-x-auto">
-                        <table class="w-full text-sm text-left">
-                            <thead class="text-xs text-gray-500 uppercase bg-gray-50 border-b border-gray-100">
-                                <tr>
-                                    <th scope="col" class="px-6 py-3 w-24">Kode</th>
-                                    <th scope="col" class="px-6 py-3">Deskripsi Pelanggaran</th>
-                                    <th scope="col" class="px-6 py-3 w-32 text-center">Aksi</th>
-                                </tr>
-                            </thead>
-                            <tbody class="divide-y divide-gray-100">
-                                @foreach($violations as $item)
-                                    <tr class="hover:bg-gray-50/80 transition-colors duration-150">
-                                        <td class="px-6 py-4 font-bold text-indigo-600 align-top">
-                                            {{ $item->kode }}
-                                        </td>
-                                        <td class="px-6 py-4 text-gray-700 align-top leading-relaxed">
-                                            {{ $item->deskripsi }}
-                                        </td>
-                                        <td class="px-6 py-4 align-top text-center">
-                                            <div class="flex justify-center gap-2">
-                                                {{-- Tombol Edit --}}
-                                                <a href="{{ route('admin.violations.edit', $item->id) }}" class="text-indigo-600 hover:text-indigo-900 bg-indigo-50 p-2 rounded-lg transition-colors">
-                                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
-                                                </a>
-
-                                                {{-- Tombol Delete --}}
-                                                <form action="{{ route('admin.violations.destroy', $item->id) }}" method="POST" onsubmit="return confirm('Yakin ingin menghapus kategori ini?');">
-                                                    @csrf
-                                                    @method('DELETE')
-                                                    <button type="submit" class="text-red-600 hover:text-red-900 bg-red-50 p-2 rounded-lg transition-colors">
-                                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
-                                                    </button>
-                                                </form>
-                                            </div>
-                                        </td>
+                        
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left border-collapse">
+                                <thead>
+                                    <tr class="bg-white border-b border-gray-100 text-xs uppercase tracking-wider text-gray-400">
+                                        <th class="px-8 py-4 font-bold w-24">Kode</th>
+                                        <th class="px-6 py-4 font-bold">Deskripsi Pelanggaran</th>
+                                        <th class="px-8 py-4 font-bold w-32 text-right">Aksi</th>
                                     </tr>
-                                @endforeach
-                            </tbody>
-                        </table>
+                                </thead>
+                                <tbody class="divide-y divide-gray-50">
+                                    @foreach($violations as $item)
+                                        <tr class="hover:bg-orange-50/30 transition-colors duration-150 group">
+                                            <td class="px-8 py-4 align-top">
+                                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-lg text-xs font-bold bg-gray-100 text-gray-600 group-hover:bg-orange-100 group-hover:text-orange-700 transition-colors">
+                                                    {{ $item->kode }}
+                                                </span>
+                                            </td>
+                                            <td class="px-6 py-4 align-top">
+                                                <p class="text-sm font-medium text-gray-700 leading-relaxed">{{ $item->deskripsi }}</p>
+                                            </td>
+                                            <td class="px-8 py-4 align-top text-right">
+                                                <div class="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                    <a href="{{ route('admin.violations.edit', $item->id) }}" class="p-2 text-gray-400 hover:text-orange-600 hover:bg-orange-50 rounded-lg transition-all">
+                                                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
+                                                    </a>
+                                                    <form action="{{ route('admin.violations.destroy', $item->id) }}" method="POST" onsubmit="return confirm('Hapus data ini?');">
+                                                        @csrf
+                                                        @method('DELETE')
+                                                        <button type="submit" class="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all">
+                                                            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                                                        </button>
+                                                    </form>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    @endforeach
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
-                </div>
-            @empty
-                <div class="bg-white overflow-hidden shadow-sm sm:rounded-xl border border-gray-100 p-12 text-center">
-                    <div class="mb-4">
-                        <svg class="mx-auto h-12 w-12 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                        </svg>
+                @empty
+                    <div class="text-center py-20 bg-white rounded-3xl border border-gray-100 shadow-sm">
+                        <div class="bg-gray-50 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <svg class="w-8 h-8 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
+                        </div>
+                        <h3 class="text-lg font-bold text-gray-900">Belum ada data</h3>
+                        <p class="text-gray-500 text-sm mt-1">Silakan tambahkan kategori pelanggaran baru.</p>
                     </div>
-                    <h3 class="text-lg font-medium text-gray-900">Belum ada data</h3>
-                    <p class="mt-1 text-sm text-gray-500">Mulai dengan menambahkan kategori pelanggaran baru.</p>
-                    <div class="mt-6">
-                        <a href="{{ route('admin.violations.create') }}" class="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700">
-                            <svg class="-ml-1 mr-2 h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-                                <path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd" />
-                            </svg>
-                            Tambah Data
-                        </a>
-                    </div>
-                </div>
-            @endforelse
-
+                @endforelse
+            </div>
         </div>
     </div>
 </x-app-layout>

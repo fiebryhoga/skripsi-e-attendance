@@ -13,8 +13,8 @@ return new class extends Migration
     {
         Schema::create('subjects', function (Blueprint $table) {
             $table->id();
-            $table->string('name'); // Nama Mapel (Contoh: Matematika Wajib)
-            $table->string('kode')->unique(); // Kode Mapel (Contoh: MTK-W)
+            $table->string('name'); 
+            $table->string('kode')->unique(); 
             $table->timestamps();
         });
     }

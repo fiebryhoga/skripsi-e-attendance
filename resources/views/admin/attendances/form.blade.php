@@ -2,13 +2,13 @@
     <div class="py-8 bg-gray-50/50 min-h-screen">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-6">
             
-            {{-- Navigasi Balik --}}
+            
             <a href="{{ route('admin.attendances.show', ['classroom' => $classroom->id, 'date' => $date]) }}" class="inline-flex items-center text-sm text-gray-500 hover:text-indigo-600 font-medium">
                 <svg class="w-4 h-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
                 Kembali ke Daftar Mapel
             </a>
 
-            {{-- Header Info --}}
+            
             <div class="bg-white p-6 rounded-3xl shadow-sm border border-gray-100 flex flex-col md:flex-row justify-between gap-6">
                 <div>
                     <div class="flex items-center gap-3 mb-2">
@@ -23,7 +23,7 @@
                     <p class="text-gray-500 mt-1">Pengajar: <span class="font-medium text-gray-700">{{ $schedule->teacher->name }}</span></p>
                 </div>
 
-                {{-- Summary Stats --}}
+                
                 <div class="flex gap-2">
                     <div class="text-center px-4 py-2 bg-green-50 rounded-xl border border-green-100">
                         <span class="block text-xl font-bold text-green-600">{{ $summary['hadir'] }}</span>
@@ -51,14 +51,14 @@
                 </div>
             @endif
 
-            {{-- FORM UTAMA --}}
+            
             <form action="{{ route('admin.attendances.store', ['classroom' => $classroom->id, 'schedule' => $schedule->id]) }}" method="POST">
                 @csrf
                 <input type="hidden" name="date" value="{{ $date }}">
 
                 <div class="bg-white rounded-3xl shadow-xl shadow-gray-100/50 border border-gray-100 overflow-hidden">
                     
-                    {{-- Toolbar --}}
+                    
                     <div class="px-6 py-4 bg-gray-50 border-b border-gray-100 flex justify-between items-center" x-data>
                         <h3 class="font-bold text-gray-700">Daftar Siswa ({{ $students->count() }})</h3>
                         <button type="button" 

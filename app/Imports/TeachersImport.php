@@ -3,7 +3,7 @@
 namespace App\Imports;
 
 use App\Models\User;
-use App\Enums\UserRole; // <--- 1. WAJIB IMPORT INI
+use App\Enums\UserRole; 
 use Illuminate\Support\Facades\Hash;
 use Maatwebsite\Excel\Concerns\ToModel;
 use Maatwebsite\Excel\Concerns\WithStartRow; 
@@ -30,9 +30,9 @@ class TeachersImport implements ToModel, WithStartRow, WithValidation, SkipsEmpt
             'phone'    => $this->formatPhone($row[3]),
             'password' => Hash::make($row[4]),
             
-            // --- PERBAIKAN DI SINI ---
-            // Jangan pakai string 'teacher', tapi pakai Enum
-            // Kita bungkus dalam array [] karena kolom di database tipe JSON
+            
+            
+            
             'roles'    => [UserRole::GURU_MAPEL->value], 
         ]);
     }

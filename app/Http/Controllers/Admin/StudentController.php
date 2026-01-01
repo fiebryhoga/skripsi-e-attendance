@@ -18,55 +18,55 @@ class StudentController extends Controller
 {
     public function index(Request $request)
     {
-        // Ambil data kelas untuk dropdown filter
+        
         $classrooms = Classroom::orderBy('name')->get(); 
 
-        // Mulai Query Siswa
+        
         $query = Student::query();
 
-        // 1. LAKUKAN JOIN (PENTING UNTUK SORTING KELAS)
-        $query->select('students.*') // Ambil data tabel students saja agar ID aman
+        
+        $query->select('students.*') 
             ->leftJoin('classrooms', 'students.classroom_id', '=', 'classrooms.id')
-            ->with('classroom'); // Tetap eager load relasi untuk performa View
+            ->with('classroom'); 
 
-        // 2. FILTER PENCARIAN
+        
         if ($request->filled('search')) {
             $search = $request->search;
             $query->where(function($q) use ($search) {
-                // Gunakan 'students.name' agar tidak bingung dengan 'classrooms.name'
+                
                 $q->where('students.name', 'like', "%{$search}%")
                 ->orWhere('students.nis', 'like', "%{$search}%");
             });
         }
 
-        // Filter Angkatan
+        
         if ($request->filled('angkatan')) {
             $query->where('students.angkatan', $request->angkatan);
         }
 
-        // Filter Gender
+        
         if ($request->filled('gender')) {
             $query->where('students.gender', $request->gender);
         }
         
-        // Filter Kelas Spesifik
+        
         if ($request->filled('classroom_id')) {
             $query->where('students.classroom_id', $request->classroom_id);
         }
 
-        // 3. SORTING / PENGURUTAN (Ubah logika latest() disini)
-        $query->orderBy('classrooms.name', 'asc') // Urutkan Nama Kelas (X, XI, XII)
-            ->orderBy('students.name', 'asc');  // Urutkan Nama Siswa (A-Z)
+        
+        $query->orderBy('classrooms.name', 'asc') 
+            ->orderBy('students.name', 'asc');  
 
-        // 4. PAGINATION (Ubah jadi 20)
+        
         $students = $query->paginate(20)->withQueryString();
 
-        // Return jika request AJAX (untuk live search/pagination tanpa reload)
+        
         if ($request->ajax()) {
             return view('admin.students._table_rows', compact('students'))->render();
         }
 
-        // Return view utama
+        
         return view('admin.students.index', compact('students', 'classrooms'));
     }
 
@@ -80,9 +80,11 @@ class StudentController extends Controller
     }
 
     public function create()
-    {
+    {        
+        $classrooms = Classroom::orderBy('name', 'asc')->get();
+
         
-        return view('admin.students.create');
+        return view('admin.students.create', compact('classrooms'));
     }
 
     public function store(Request $request)
@@ -126,19 +128,19 @@ class StudentController extends Controller
             'angkatan' => 'required|numeric|digits:4',
         ]);
 
-        // Ambil semua data input ke variabel $data
+        
         $data = $request->all();
 
         if ($request->hasFile('photo')) {
-            // Hapus foto lama jika ada
+            
             if ($student->photo) {
                 Storage::disk('public')->delete($student->photo);
             }
-            // Simpan foto baru ke variabel $data['photo']
+            
             $data['photo'] = $request->file('photo')->store('students', 'public');
         }
 
-        // PERBAIKAN DI SINI: Gunakan $data, BUKAN $request->all()
+        
         $student->update($data); 
 
         Auth::user()->notify(new DataChangedNotification('Data siswa ' . $student->name . ' berhasil diperbarui.'));
@@ -190,8 +192,8 @@ class StudentController extends Controller
 
     public function downloadTemplate()
     {
-        // Langsung download menggunakan Class Export yang sudah Anda buat
-        // Tidak perlu header manual atau fputcsv
+        
+        
         return Excel::download(new StudentTemplateExport, 'template_siswa_simadis.xlsx');
     }
 }

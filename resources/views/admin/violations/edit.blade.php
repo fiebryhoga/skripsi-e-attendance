@@ -1,9 +1,8 @@
 <x-app-layout>
-    {{-- CSS Tom Select --}}
     <link href="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/css/tom-select.css" rel="stylesheet">
     <style>
         .ts-control { border-radius: 0.75rem; padding: 0.75rem 1rem; border-color: #e5e7eb; box-shadow: 0 1px 2px 0 rgba(0,0,0,0.05); }
-        .ts-control:focus { border-color: #f97316; box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.1); } /* Orange Focus for Edit */
+        .ts-control:focus { border-color: #f97316; box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.1); }
         .ts-dropdown { border-radius: 0.75rem; padding: 0.5rem; border: 1px solid #f3f4f6; z-index: 50; }
         .ts-dropdown .active { background-color: #fff7ed; color: #c2410c; }
     </style>

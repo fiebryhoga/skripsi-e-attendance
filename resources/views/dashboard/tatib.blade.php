@@ -1,8 +1,8 @@
 <x-app-layout>
-    <div class="py-12 bg-gray-50/50 min-h-screen">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-8">
+    <div class="bg-gray-50/50 min-h-screen">
+        <div class="space-y-8">
 
-            {{-- Header --}}
+            
             <div class="flex flex-col md:flex-row justify-between items-center gap-4">
                 <div>
                     <h1 class="text-3xl font-extrabold text-gray-800">Dashboard Kedisiplinan</h1>
@@ -14,7 +14,7 @@
                 </a>
             </div>
 
-            {{-- Stats --}}
+            
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <div class="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
                     <div class="text-xs font-bold text-gray-400 uppercase">Kasus Hari Ini</div>
@@ -32,7 +32,7 @@
             </div>
 
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                {{-- List Pelanggaran Hari Ini --}}
+                
                 <div class="lg:col-span-2 bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
                     <h3 class="font-bold text-gray-800 text-lg mb-4 flex items-center gap-2">
                         <svg class="w-5 h-5 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
@@ -64,7 +64,7 @@
                     @endif
                 </div>
 
-                {{-- Tren Kategori --}}
+                
                 <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
                     <h3 class="font-bold text-gray-800 text-lg mb-4">Tren Pelanggaran</h3>
                     <ul class="space-y-3">

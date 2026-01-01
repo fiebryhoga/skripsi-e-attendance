@@ -14,12 +14,12 @@
 
     <div class="min-h-screen flex items-center justify-center p-4 lg:p-0">
         
-        <div class="bg-white w-full h-screen lg:h-auto lg:max-w-7xl lg:rounded-3xl lg:shadow-2xl overflow-hidden flex flex-col lg:flex-row min-h-screen lg:min-h-[85vh]">
+        <div class="bg-white w-full lg:h-auto lg:max-w-7xl lg:rounded-3xl lg:shadow-2xl overflow-hidden flex flex-col lg:flex-row min-h-screen lg:min-h-[85vh]">
+            
             
             <div class="hidden lg:flex lg:w-1/2 relative bg-indigo-900 text-white flex-col justify-between p-12">
                 <div class="absolute inset-0 z-0">
                     <img src="https://images.unsplash.com/photo-1523050854058-8df90110c9f1?q=80&w=2070&auto=format&fit=crop" 
-                         alt="SMAN 1 Malang" 
                          class="w-full h-full object-cover opacity-40 mix-blend-overlay">
                     <div class="absolute inset-0 bg-gradient-to-br from-indigo-900 via-blue-900 to-purple-900 opacity-90"></div>
                 </div>
@@ -43,6 +43,7 @@
                 </div>
             </div>
 
+            
             <div class="w-full lg:w-1/2 flex flex-col justify-center px-8 lg:px-20 py-12 relative bg-white">
                 
                 <div class="absolute top-0 right-0 -mt-20 -mr-20 w-80 h-80 rounded-full bg-indigo-50 blur-3xl opacity-50 pointer-events-none"></div>
@@ -50,12 +51,12 @@
                 <div class="relative w-full max-w-md mx-auto">
                     <div class="lg:hidden mb-8 text-center">
                         <h2 class="text-2xl font-bold text-indigo-700">SMAN 1 Malang</h2>
-                        <p class="text-gray-500 text-sm">E-Attendance System</p>
+                        <p class="text-gray-500 text-sm">Sistem Manajemen Kedisiplinan Siswa</p>
                     </div>
 
                     <div class="mb-10">
                         <h2 class="text-3xl font-bold text-gray-800 mb-2">Selamat Datang 👋</h2>
-                        <p class="text-gray-500">Silakan masukkan NIP dan Password Anda.</p>
+                        <p class="text-gray-500">Silahkan masukkan NIP dan Password Anda.</p>
                     </div>
 
                     <x-auth-session-status class="mb-4" :status="session('status')" />
@@ -63,6 +64,7 @@
                     <form method="POST" action="{{ route('login') }}" class="space-y-6">
                         @csrf
 
+                        
                         <div>
                             <label for="nip" class="block text-sm font-medium text-gray-700 mb-2">Nomor Induk Pegawai (NIP)</label>
                             <div class="relative">
@@ -78,6 +80,7 @@
                             <x-input-error :messages="$errors->get('nip')" class="mt-2" />
                         </div>
 
+                        
                         <div>
                             <label for="password" class="block text-sm font-medium text-gray-700 mb-2">Password</label>
                             <div class="relative">
@@ -93,17 +96,25 @@
                             <x-input-error :messages="$errors->get('password')" class="mt-2" />
                         </div>
 
+                        
                         <div class="flex items-center justify-between">
                             <label for="remember_me" class="inline-flex items-center cursor-pointer">
                                 <input id="remember_me" type="checkbox" class="rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500 w-4 h-4 cursor-pointer" name="remember">
                                 <span class="ml-2 text-sm text-gray-600">Ingat Saya</span>
                             </label>
                             
-                            @if (Route::has('password.request'))
-                                <a class="text-sm text-indigo-600 hover:text-indigo-800 font-medium transition-colors" href="{{ route('password.request') }}">
+                            
+                            <div class="relative group">
+                                <span class="text-sm text-indigo-600 font-medium cursor-help border-b border-dashed border-indigo-300">
                                     Lupa Password?
-                                </a>
-                            @endif
+                                </span>
+                                
+                                <div class="absolute bottom-full right-0 mb-2 hidden group-hover:block w-56 p-3 bg-gray-800 text-white text-xs rounded-lg shadow-xl text-center z-50">
+                                    Silahkan hubungi Admin Sekolah / Tata Usaha untuk melakukan reset password.
+                                    
+                                    <div class="absolute top-full right-4 -mt-1 border-4 border-transparent border-t-gray-800"></div>
+                                </div>
+                            </div>
                         </div>
 
                         <button type="submit" class="w-full bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-700 hover:to-blue-700 text-white font-semibold py-3.5 px-4 rounded-xl shadow-lg shadow-indigo-500/30 transform transition-all duration-200 hover:-translate-y-0.5 hover:shadow-indigo-500/40 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
@@ -111,11 +122,16 @@
                         </button>
                     </form>
 
-                    <div class="mt-8 text-center">
-                        <p class="text-sm text-gray-500">
-                            Mengalami kendala login? <a href="#" class="text-indigo-600 font-medium hover:underline">Hubungi Admin</a>
-                        </p>
+                    
+                    <div class="mt-8">
+                        <div class="bg-indigo-50 border border-indigo-100 rounded-xl p-4 text-center">
+                            <p class="text-xs text-gray-600 leading-relaxed">
+                                <span class="font-bold text-indigo-700 block mb-1">Butuh Bantuan Akses?</span>
+                                Jika Anda belum memiliki akun atau lupa password, harap menghubungi <strong>Admin Sekolah / TU</strong> secara langsung.
+                            </p>
+                        </div>
                     </div>
+
                 </div>
             </div>
         </div>

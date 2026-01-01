@@ -1,18 +1,18 @@
 <x-app-layout>
-    <div class="py-12 bg-gray-50/50 min-h-screen">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-8">
+    <div class="bg-gray-50/50 min-h-screen">
+        <div class="space-y-8">
 
-            {{-- Header Kelas --}}
+            
             <div class="bg-indigo-600 rounded-3xl p-8 text-white shadow-xl shadow-indigo-500/20 relative overflow-hidden">
                 <div class="relative z-10">
                     <h2 class="text-3xl font-bold">Kelas {{ $classroom->name }}</h2>
                     <p class="text-indigo-100 mt-2">Laporan perkembangan siswa per {{ \Carbon\Carbon::now()->translatedFormat('d F Y') }}</p>
                 </div>
-                {{-- Dekorasi --}}
+                
                 <div class="absolute top-0 right-0 -mt-4 -mr-4 w-32 h-32 bg-white/10 rounded-full blur-2xl"></div>
             </div>
 
-            {{-- Ringkasan --}}
+            
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
                     <div class="text-gray-500 text-xs font-bold uppercase">Total Siswa</div>
@@ -28,7 +28,7 @@
                 </div>
             </div>
 
-            {{-- Tabel Siswa Perlu Perhatian --}}
+            
             <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
                 <div class="flex justify-between items-center mb-6">
                     <h3 class="font-bold text-gray-800 text-lg">Siswa Perlu Perhatian</h3>

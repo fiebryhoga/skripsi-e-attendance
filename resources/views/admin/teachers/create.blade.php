@@ -1,7 +1,7 @@
 <x-app-layout>
     <x-slot name="header">Tambah Pengajar Baru</x-slot>
 
-    {{-- ... Header & Back Button ... --}}
+    
     <div class="mb-6">
         <a href="{{ route('admin.teachers.index') }}" class="inline-flex items-center text-sm text-gray-500 hover:text-indigo-600 transition-colors font-medium">
             <svg class="w-4 h-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>
@@ -15,7 +15,7 @@
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
             
             <div class="lg:col-span-2 space-y-6">
-                {{-- ... Identitas & Akun (Tetap sama) ... --}}
+                
                 <div class="bg-white p-8 rounded-3xl shadow-xl shadow-gray-100/50 border border-gray-100">
                     <div class="mb-6">
                         <h3 class="text-lg font-bold text-gray-800 flex items-center gap-2">
@@ -46,6 +46,15 @@
                                    class="w-full rounded-xl border-gray-200 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 py-3 px-4 transition-all">
                         </div>
 
+                        <div>
+                            <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Nomor WhatsApp (WA)</label>
+                            <div class="relative">
+                                <input type="text" name="phone" value="{{ old('phone') }}" placeholder="0812xxxxx"
+                                       class="w-full rounded-xl border-gray-200 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 py-3 pl-4 pr-4 transition-all">
+                            </div>
+                            @error('phone') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
+                        </div>
+
                         <div class="md:col-span-2">
                             <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Password Awal <span class="text-red-500">*</span></label>
                             <input type="password" name="password" required placeholder="Minimal 8 karakter"
@@ -54,7 +63,7 @@
                     </div>
                 </div>
 
-                {{-- ... Foto Profil (Tetap sama) ... --}}
+                
                 <div class="bg-white p-8 rounded-3xl shadow-xl shadow-gray-100/50 border border-gray-100">
                      <div class="mb-4">
                         <h3 class="text-lg font-bold text-gray-800 flex items-center gap-2">
@@ -77,7 +86,7 @@
                         <p class="text-sm text-gray-500">Pilih satu atau lebih.</p>
                     </div>
 
-                    {{-- WRAPPER x-data UNTUK LOGIKA OTOMATIS CENTANG --}}
+                    
                     <div class="space-y-3" x-data="{
                         handleRoleChange(e) {
                             if (e.target.value === '{{ \App\Enums\UserRole::ADMIN->value }}' && e.target.checked) {
@@ -89,7 +98,7 @@
                         @foreach(\App\Enums\UserRole::cases() as $role)
                             <label class="relative flex items-start p-4 rounded-xl border-2 cursor-pointer transition-all hover:bg-gray-50 has-[:checked]:border-indigo-600 has-[:checked]:bg-indigo-50/30 border-gray-100">
                                 <div class="flex items-center h-5">
-                                    {{-- TAMBAHAN: @change="handleRoleChange" --}}
+                                    
                                     <input type="checkbox" name="roles[]" value="{{ $role->value }}" 
                                            class="w-5 h-5 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500"
                                            {{ in_array($role->value, old('roles', [])) ? 'checked' : '' }}

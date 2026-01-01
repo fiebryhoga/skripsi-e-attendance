@@ -62,21 +62,21 @@ class ProfileController extends Controller
     public function updateAvatar(Request $request): RedirectResponse
     {
         $request->validate([
-            'avatar' => ['required', 'image', 'max:2048'], // Max 2MB
+            'avatar' => ['required', 'image', 'max:2048'], 
         ]);
 
         $user = $request->user();
 
         if ($request->hasFile('avatar')) {
-            // 1. Hapus foto lama jika ada (agar server tidak penuh)
+            
             if ($user->avatar) {
                 Storage::disk('public')->delete($user->avatar);
             }
 
-            // 2. Simpan foto baru ke folder 'avatars' di storage public
+            
             $path = $request->file('avatar')->store('avatars', 'public');
 
-            // 3. Update database
+            
             $user->update(['avatar' => $path]);
         }
 

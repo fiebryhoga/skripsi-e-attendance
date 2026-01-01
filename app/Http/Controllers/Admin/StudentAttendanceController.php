@@ -13,30 +13,33 @@ use App\Models\StudentAttendance;
 use App\Services\WhatsAppService;
 use App\Enums\UserRole;
 use App\Models\Schedule;
+use App\Models\User;
+use App\Notifications\DataChangedNotification;
+use Illuminate\Support\Facades\Notification;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 class StudentAttendanceController extends Controller
 {
-    // 1. Pilih Kelas (Sama seperti sebelumnya)
+    
     public function index()
     {
         $user = Auth::user();
         $query = Classroom::withCount('students')->orderBy('name');
 
-        // JIKA BUKAN ADMIN (GURU / WALI KELAS)
+        
         if (! $user->hasRole(UserRole::ADMIN)) {
             
-            // 1. Filter: Hanya ambil kelas yang diajar oleh guru ini
+            
             $query->whereHas('schedules', function($q) use ($user) {
                 $q->where('user_id', $user->id);
             });
 
-            // 2. Load Data: Ambil detail jadwal guru tersebut di kelas ini
-            // (Supaya bisa ditampilkan di kartu: Mapel - Hari - Jam)
+            
+            
             $query->with(['schedules' => function($q) use ($user) {
                 $q->where('user_id', $user->id)
-                ->with('subject') // Load nama mapel
+                ->with('subject') 
                 ->orderByRaw("FIELD(day, 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu')")
                 ->orderBy('jam_mulai');
             }]);
@@ -47,7 +50,7 @@ class StudentAttendanceController extends Controller
         return view('admin.attendances.index', compact('classrooms'));
     }
 
-    // 2. Lihat Daftar Mapel di Hari Tertentu (Halaman Baru)
+    
     public function show(Request $request, Classroom $classroom)
     {
         Carbon::setLocale('id');
@@ -55,8 +58,8 @@ class StudentAttendanceController extends Controller
         $dayName = Carbon::parse($date)->translatedFormat('l'); 
         $user = Auth::user();
 
-        // Validasi Keamanan:
-        // Jika Guru iseng ganti ID Kelas di URL ke kelas yang tidak diajar, tolak aksesnya.
+        
+        
         if (! $user->hasRole(UserRole::ADMIN)) {
             $isTeachingThisClass = Schedule::where('classroom_id', $classroom->id)
                                     ->where('user_id', $user->id)
@@ -66,21 +69,21 @@ class StudentAttendanceController extends Controller
             }
         }
 
-        // Query Jadwal
+        
         $query = Schedule::with(['subject', 'teacher'])
                     ->where('classroom_id', $classroom->id)
                     ->where('day', $dayName)
                     ->orderBy('jam_mulai');
 
-        // LOGIKA PEMBATASAN JADWAL
-        // Jika BUKAN Admin, hanya tampilkan jadwal milik guru tersebut
+        
+        
         if (! $user->hasRole(UserRole::ADMIN)) {
             $query->where('user_id', $user->id);
         }
 
         $schedules = $query->get();
 
-        // Hitung statistik kehadiran
+        
         $schedules->map(function($schedule) use ($date) {
             $schedule->attendance_count = StudentAttendance::where('schedule_id', $schedule->id)
                                             ->where('date', $date)
@@ -91,7 +94,7 @@ class StudentAttendanceController extends Controller
         return view('admin.attendances.schedule-list', compact('classroom', 'schedules', 'date', 'dayName'));
     }
 
-    // 3. Form Input Absen untuk 1 Mapel Spesifik
+    
     public function create(Request $request, Classroom $classroom, Schedule $schedule)
     {
 
@@ -103,26 +106,26 @@ class StudentAttendanceController extends Controller
 
         $date = $request->input('date', date('Y-m-d'));
 
-        // Validasi: Pastikan jadwal ini memang milik kelas ini (Security check)
+        
         if($schedule->classroom_id != $classroom->id) {
             abort(404);
         }
 
-        // Ambil Siswa + Data Absen di Mapel ini & Tanggal ini
+        
         $students = Student::where('classroom_id', $classroom->id)
             ->orderBy('name')
             ->get()
             ->map(function ($student) use ($date, $schedule) {
                 $attendance = StudentAttendance::where('student_id', $student->id)
                                 ->where('date', $date)
-                                ->where('schedule_id', $schedule->id) // Filter per Mapel
+                                ->where('schedule_id', $schedule->id) 
                                 ->first();
                 
                 $student->attendance_today = $attendance;
                 return $student;
             });
 
-        // Summary Statistik
+        
         $summary = [
             'hadir' => $students->where('attendance_today.status', 'Hadir')->count(),
             'sakit' => $students->where('attendance_today.status', 'Sakit')->count(),
@@ -133,7 +136,7 @@ class StudentAttendanceController extends Controller
         return view('admin.attendances.form', compact('classroom', 'schedule', 'students', 'date', 'summary'));
     }
 
-    // 4. Simpan Data
+    
     public function store(Request $request, Classroom $classroom, Schedule $schedule, WhatsAppService $waService)
     {
         $user = Auth::user();
@@ -150,7 +153,7 @@ class StudentAttendanceController extends Controller
         $date = $request->date;
         $attendances = $request->attendances;
 
-        // --- 1. DATA WALI KELAS & FORMAT WAKTU ---
+        
         $classroom->load('teacher'); 
         $waliKelas = $classroom->teacher; 
         $nomorWaliKelas = ($waliKelas && !empty($waliKelas->phone)) ? $waliKelas->phone : null; 
@@ -162,21 +165,21 @@ class StudentAttendanceController extends Controller
         $jamSelesai = $schedule->jam_selesai; 
         $infoJam = ($jamMulai == $jamSelesai) ? "Jam pelajaran ke $jamMulai" : "Jam pelajaran ke $jamMulai - $jamSelesai";
 
-        // --- 2. LOOP & LOGIC ---
+        
         foreach ($attendances as $studentId => $data) {
             
-            // A. AMBIL STATUS LAMA (Sebelum Update)
-            // Kita cari dulu apakah data presensi untuk siswa ini, tanggal ini, mapel ini SUDAH ADA?
+            
+            
             $existingAttendance = StudentAttendance::where('student_id', $studentId)
                                     ->where('date', $date)
                                     ->where('schedule_id', $schedule->id)
                                     ->first();
 
-            // Jika belum ada, status lamanya kita anggap null
+            
             $oldStatus = $existingAttendance ? $existingAttendance->status : null;
             $newStatus = $data['status'];
 
-            // B. SIMPAN / UPDATE KE DATABASE
+            
             StudentAttendance::updateOrCreate(
                 [
                     'student_id' => $studentId,
@@ -190,18 +193,18 @@ class StudentAttendanceController extends Controller
                 ]
             );
 
-            // C. LOGIKA ANTI SPAM WA
-            // Syarat Kirim:
-            // 1. Status barunya harus Alpha atau Bolos
-            // 2. Statusnya HARUS BERUBAH dari sebelumnya.
-            //    (Contoh: Dari 'Hadir' jadi 'Alpha' -> KIRIM)
-            //    (Contoh: Dari 'Alpha' jadi 'Alpha' -> JANGAN KIRIM, cuma update note mungkin)
+            
+            
+            
+            
+            
+            
             
             if (in_array($newStatus, ['Alpha', 'Bolos']) && $newStatus !== $oldStatus) {
                 
                 $student = Student::find($studentId);
 
-                // --- Kirim ke ORTU ---
+                
                 if ($student && !empty($student->phone_parent)) { 
                     $msgOrtu = $waService->formatAttendanceMessage(
                         $student->name,
@@ -213,7 +216,7 @@ class StudentAttendanceController extends Controller
                     $waService->send($student->phone_parent, $msgOrtu);
                 }
 
-                // --- Kirim ke WALI KELAS ---
+                
                 if ($nomorWaliKelas) {
                     $msgGuru = $waService->formatTeacherMessage(
                         $student->name,
@@ -228,6 +231,24 @@ class StudentAttendanceController extends Controller
             }
         }
 
+        
+        
+        
+        
+        
+        
+        $admins = User::whereJsonContains('roles', UserRole::ADMIN->value)->get();
+        
+        
+        
+        $recipients = $admins->push($user)->unique('id');
+
+        
+        $notifMessage = "Presensi {$classroom->name} - {$schedule->subject->name} ($hariTanggal) berhasil disimpan oleh {$user->name}.";
+
+        
+        Notification::send($recipients, new DataChangedNotification($notifMessage));
+
         return redirect()->route('admin.attendances.create', [
             'classroom' => $classroom->id, 
             'schedule' => $schedule->id, 
@@ -239,40 +260,38 @@ class StudentAttendanceController extends Controller
     {
         $user = Auth::user();
 
-        // ---------------------------------------------------------
-        // 1. POPULASI DROPDOWN KELAS
-        // ---------------------------------------------------------
-        // Admin: Semua Kelas
-        // Guru/Wali: Hanya kelas yang ada di jadwalnya
         $classroomsQuery = Classroom::orderBy('name');
         
         if (! $user->hasRole(UserRole::ADMIN)) {
-            $classroomsQuery->whereHas('schedules', function($q) use ($user) {
-                $q->where('user_id', $user->id);
+            $classroomsQuery->where(function($q) use ($user) {
+                
+                $q->whereHas('schedules', function($subQ) use ($user) {
+                    $subQ->where('user_id', $user->id);
+                })
+                
+                ->orWhere('teacher_id', $user->id);
             });
         }
         $classrooms = $classroomsQuery->get();
 
-
-        // ---------------------------------------------------------
-        // 2. POPULASI DROPDOWN MAPEL (DEPENDENT LOGIC)
-        // ---------------------------------------------------------
-        // Default kosong agar user memilih kelas dulu.
-        // TAPI, jika user sudah submit (ada request classroom_id), 
-        // kita harus isi ulang agar pilihannya tidak hilang setelah reload.
-        
         $subjects = []; 
 
         if ($request->filled('classroom_id')) {
+            
+            $isWaliKelas = Classroom::where('id', $request->classroom_id)
+                            ->where('teacher_id', $user->id)
+                            ->exists();
+
             $subjectsQuery = \App\Models\Subject::orderBy('name');
 
-            // Filter Mapel berdasarkan Jadwal di Kelas TERSEBUT
-            $subjectsQuery->whereHas('schedules', function($q) use ($user, $request) {
-                // Syarat 1: Jadwalnya harus di kelas yang dipilih
+            $subjectsQuery->whereHas('schedules', function($q) use ($user, $request, $isWaliKelas) {
                 $q->where('classroom_id', $request->classroom_id);
 
-                // Syarat 2: Jika bukan Admin, jadwalnya harus milik guru ini
-                if (! $user->hasRole(UserRole::ADMIN)) {
+                
+                
+                
+                
+                if (! $user->hasRole(UserRole::ADMIN) && !$isWaliKelas) {
                     $q->where('user_id', $user->id);
                 }
             });
@@ -280,10 +299,8 @@ class StudentAttendanceController extends Controller
             $subjects = $subjectsQuery->get();
         }
 
-
-        // ---------------------------------------------------------
-        // 3. LOGIKA PENGAMBILAN DATA PRESENSI (JIKA DISUBMIT)
-        // ---------------------------------------------------------
+        
+        
         $attendances = null;
         $dates = [];
         $students = [];
@@ -292,15 +309,11 @@ class StudentAttendanceController extends Controller
         
         if ($request->filled(['classroom_id', 'subject_id', 'start_date', 'end_date'])) {
             
-            // A. VALIDASI KEAMANAN
-            // Pastikan guru tidak mengutak-atik ID di URL untuk melihat kelas orang lain
             $this->authorizeAccess($request->classroom_id, $request->subject_id);
 
-            // B. AMBIL DATA OBJECT UTAMA
             $selectedClassroom = Classroom::find($request->classroom_id);
             $selectedSubject = \App\Models\Subject::find($request->subject_id);
 
-            // C. AMBIL DATA REPORT (Menggunakan Helper Private biar rapi)
             $data = $this->getRecapData($request);
             $dates = $data['dates'];
             $students = $data['students'];
@@ -318,24 +331,32 @@ class StudentAttendanceController extends Controller
 
 
 
-    // --- METHOD BARU: API UNTUK AJAX ---
+
+
+
+
     public function getSubjectsByClassroom($classroomId)
     {
         $user = Auth::user();
         
+        
+        $isWaliKelas = Classroom::where('id', $classroomId)
+                        ->where('teacher_id', $user->id)
+                        ->exists();
+
         $query = \App\Models\Subject::query();
 
-        // Cari Mapel yang berelasi dengan Jadwal di Kelas $classroomId
-        $query->whereHas('schedules', function($q) use ($user, $classroomId) {
+        $query->whereHas('schedules', function($q) use ($user, $classroomId, $isWaliKelas) {
             $q->where('classroom_id', $classroomId);
             
-            // Jika Guru, filter juga berdasarkan ID user dia
-            if (! $user->hasRole(UserRole::ADMIN)) {
+            
+            
+            if (! $user->hasRole(UserRole::ADMIN) && !$isWaliKelas) {
                 $q->where('user_id', $user->id);
             }
         });
 
-        $subjects = $query->orderBy('name')->get(['id', 'name']); // Ambil ID dan Nama saja
+        $subjects = $query->orderBy('name')->get(['id', 'name']); 
 
         return response()->json($subjects);
     }
@@ -344,7 +365,7 @@ class StudentAttendanceController extends Controller
 
     
 
-    // 6. ACTION DOWNLOAD EXCEL
+    
     public function downloadRecap(Request $request)
     {
         $request->validate([
@@ -354,15 +375,15 @@ class StudentAttendanceController extends Controller
             'end_date' => 'required',
         ]);
 
-        // --- VALIDASI KEAMANAN (PENTING) ---
-        // Ini mencegah Guru mengganti ID di URL untuk download punya orang lain
+        
+        
         $this->authorizeAccess($request->classroom_id, $request->subject_id);
-        // -----------------------------------
+        
 
         $classroom = Classroom::findOrFail($request->classroom_id);
         $subject = \App\Models\Subject::findOrFail($request->subject_id);
 
-        // Ambil Data
+        
         $dataRef = $this->getRecapData($request);
 
         $data = [
@@ -374,43 +395,44 @@ class StudentAttendanceController extends Controller
             'endDate' => $request->end_date,
         ];
 
-        // Nama File: REKAP_XA_MTK_20251231.xlsx
+        
         $fileName = 'REKAP_' . str_replace(' ', '', $classroom->name) . '_' . 
                      str_replace(' ', '', $subject->name) . '_' . date('YmdHis') . '.xlsx';
 
         return \Maatwebsite\Excel\Facades\Excel::download(new \App\Exports\AttendanceRecapExport($data), $fileName);
     }
 
-    // --- PRIVATE HELPER (Agar kodingan rapi) ---
 
-    /**
-     * Fungsi Validasi Hak Akses
-     * Admin: Boleh semua.
-     * Guru/Wali/Tatib: Hanya boleh jika punya jadwal mengajar Mapel X di Kelas Y.
-     */
     private function authorizeAccess($classroomId, $subjectId)
     {
         $user = Auth::user();
 
-        // Admin Bebas Akses
+        
         if ($user->hasRole(UserRole::ADMIN)) {
             return true;
         }
 
-        // Cek apakah Guru punya jadwal Mapel X di Kelas Y
+        
+        $isWaliKelas = Classroom::where('id', $classroomId)
+                        ->where('teacher_id', $user->id)
+                        ->exists();
+
+        if ($isWaliKelas) {
+            return true; 
+        }
+
+        
         $hasSchedule = Schedule::where('classroom_id', $classroomId)
             ->where('subject_id', $subjectId)
             ->where('user_id', $user->id)
             ->exists();
 
         if (! $hasSchedule) {
-            abort(403, 'ANDA TIDAK MEMILIKI HAK AKSES UNTUK MELIHAT REKAP KELAS INI.');
+            abort(403, 'ANDA TIDAK MEMILIKI HAK AKSES UNTUK MELIHAT REKAP KELAS INI (Bukan Pengajar & Bukan Wali Kelas).');
         }
     }
 
-    /**
-     * Logic Query Data (Dipakai di view & download)
-     */
+
     private function getRecapData($request)
     {
         $classroomId = $request->classroom_id;
@@ -418,8 +440,8 @@ class StudentAttendanceController extends Controller
         $startDate = $request->start_date;
         $endDate = $request->end_date;
 
-        // 1. Ambil List Tanggal Pertemuan (Header Kolom)
-        // Cari tanggal berapa saja ada input presensi untuk mapel & kelas ini
+        
+        
         $dates = StudentAttendance::where('classroom_id', $classroomId)
             ->whereHas('schedule', function($q) use ($subjectId) {
                 $q->where('subject_id', $subjectId);
@@ -431,7 +453,7 @@ class StudentAttendanceController extends Controller
             ->pluck('date')
             ->toArray();
 
-        // 2. Ambil List Siswa beserta Status Presensinya (Baris Data)
+        
         $students = Student::where('classroom_id', $classroomId)
             ->orderBy('name')
             

@@ -6,7 +6,7 @@ use Illuminate\Contracts\View\View;
 use Maatwebsite\Excel\Concerns\FromView;
 use Maatwebsite\Excel\Concerns\ShouldAutoSize;
 use Maatwebsite\Excel\Concerns\WithStyles;
-use Maatwebsite\Excel\Concerns\WithEvents; // Untuk Merge Cells
+use Maatwebsite\Excel\Concerns\WithEvents; 
 use Maatwebsite\Excel\Events\AfterSheet;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 use PhpOffice\PhpSpreadsheet\Style\Border;
@@ -33,46 +33,46 @@ class AttendanceRecapExport implements FromView, ShouldAutoSize, WithStyles, Wit
         ]);
     }
 
-    // Styling CSS-like untuk Excel
+    
     public function styles(Worksheet $sheet)
     {
         return [
-            // Style default untuk seluruh sheet (Font Arial 11)
+            
             1 => ['font' => ['name' => 'Arial', 'size' => 11]],
         ];
     }
 
-    // Event untuk melakukan Merge Cells dan Border yang kompleks
+    
     public function registerEvents(): array
     {
         return [
             AfterSheet::class => function(AfterSheet $event) {
                 $sheet = $event->sheet->getDelegate();
                 
-                // Hitung Total Kolom (No + Nama + Jumlah Tanggal + 4 Total)
+                
                 $totalColumns = 2 + count($this->data['dates']) + 4; 
                 
-                // Konversi angka ke Huruf Kolom (Misal: 10 -> J)
+                
                 $lastColumn = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex($totalColumns);
                 $lastRow = $sheet->getHighestRow();
 
-                // 1. MERGE HEADER (JUDUL)
-                $sheet->mergeCells('A1:' . $lastColumn . '1'); // PEMERINTAH...
-                $sheet->mergeCells('A2:' . $lastColumn . '2'); // DINAS PENDIDIKAN...
-                $sheet->mergeCells('A3:' . $lastColumn . '3'); // SMA NEGERI 1 MALANG...
-                $sheet->mergeCells('A4:' . $lastColumn . '4'); // JUDUL LAPORAN
-                $sheet->mergeCells('A5:' . $lastColumn . '5'); // SPASI
+                
+                $sheet->mergeCells('A1:' . $lastColumn . '1'); 
+                $sheet->mergeCells('A2:' . $lastColumn . '2'); 
+                $sheet->mergeCells('A3:' . $lastColumn . '3'); 
+                $sheet->mergeCells('A4:' . $lastColumn . '4'); 
+                $sheet->mergeCells('A5:' . $lastColumn . '5'); 
 
-                // Style Header Utama
+                
                 $sheet->getStyle('A1:A4')->applyFromArray([
                     'font' => ['bold' => true, 'size' => 12],
                     'alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER],
                 ]);
                 
-                // Style Header SMA NEGERI 1 MALANG (Lebih Besar)
+                
                 $sheet->getStyle('A3')->getFont()->setSize(14)->setBold(true);
 
-                // 2. BORDER UNTUK TABEL (Mulai baris 8 sampai akhir)
+                
                 $sheet->getStyle('A8:' . $lastColumn . $lastRow)->applyFromArray([
                     'borders' => [
                         'allBorders' => [
@@ -82,7 +82,7 @@ class AttendanceRecapExport implements FromView, ShouldAutoSize, WithStyles, Wit
                     ],
                 ]);
 
-                // 3. HEADER TABEL (BOLD & CENTER & WARNA ABU)
+                
                 $sheet->getStyle('A8:' . $lastColumn . '8')->applyFromArray([
                     'font' => ['bold' => true],
                     'alignment' => [
@@ -95,11 +95,11 @@ class AttendanceRecapExport implements FromView, ShouldAutoSize, WithStyles, Wit
                     ],
                 ]);
 
-                // 4. ALIGNMENT ISI TABEL
-                // Kolom No (A) Center
+                
+                
                 $sheet->getStyle('A9:A' . $lastRow)->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
                 
-                // Kolom Nilai (Mulai dari C sampai Akhir) Center
+                
                 $sheet->getStyle('C9:' . $lastColumn . $lastRow)->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
             },
         ];

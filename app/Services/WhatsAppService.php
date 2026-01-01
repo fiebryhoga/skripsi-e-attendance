@@ -8,26 +8,27 @@ use Illuminate\Support\Facades\Log;
 class WhatsAppService
 {
     protected $baseUrl;
+    protected $secretKey;
 
     public function __construct()
     {
-        $this->baseUrl = 'http://localhost:3000';
+        
+        $this->baseUrl = config('services.wa_gateway.url');
+        $this->secretKey = config('services.wa_gateway.secret');
     }
 
-    // Format Pesan untuk ORANG TUA
     public function formatAttendanceMessage($studentName, $status, $mapel, $hariTanggal, $infoJam)
     {
-        return "Halo Bapak/Ibu Wali Murid,\n\n" .
+        return "Yang Terhormat Bapak/Ibu Wali Murid,\n\n" .
                "Diberitahukan bahwa siswa a.n *$studentName* " .
                "tercatat *$status* pada mata pelajaran *$mapel*.\n\n" .
                "Detail:\n" .
                "🗓 $hariTanggal\n" .
-               "⏰ $infoJam\n\n" . // <--- Disini nanti muncul "Jam ke 1 - 3"
+               "⏰ $infoJam\n\n" . 
                "Mohon konfirmasinya kepada pihak sekolah. Terima kasih.\n" .
                "- Sistem Akademik Sekolah";
     }
 
-    // Format Pesan untuk WALI KELAS
     public function formatTeacherMessage($studentName, $status, $classroomName, $mapel, $hariTanggal, $infoJam)
     {
         return "⚠️ *Laporan Presensi Siswa*\n\n" .
@@ -38,15 +39,6 @@ class WhatsAppService
                "Mohon ditindaklanjuti.";
     }
 
-
-
-    
-
-
-
-    /**
-     * Format Pesan PELANGGARAN untuk ORANG TUA
-     */
     public function formatViolationMessage($studentName, $deskripsi, $kode, $date, $note)
     {
         return "⚠️ *PEMBERITAHUAN PELANGGARAN*\n\n" .
@@ -60,10 +52,6 @@ class WhatsAppService
                "Mohon pembinaan dari Bapak/Ibu di rumah. Terima kasih.";
     }
 
-    /**
-     * Format Pesan PELANGGARAN untuk WALI KELAS
-     * (Sesuai request format Anda)
-     */
     public function formatViolationTeacherMessage($studentName, $classroomName, $deskripsi, $kode, $date)
     {
         return "⚠️ *Laporan Pelanggaran Siswa*\n\n" .
@@ -75,23 +63,33 @@ class WhatsAppService
                "Mohon perhatian dan tindak lanjutnya.";
     }
 
-
-
-
-
     public function send($number, $message)
     {
         if (empty($number) || $number == '-' || strlen($number) < 5) {
             return false;
         }
 
+        
+        
+        if (substr($number, 0, 1) == '0') {
+            $number = '62' . substr($number, 1);
+        }
+
         try {
-            $response = Http::timeout(5)->post("{$this->baseUrl}/send-message", [
-                'number' => $number,
-                'message' => $message,
-            ]);
+            
+            $response = Http::timeout(10) 
+                ->withHeaders([
+                    'x-api-key' => $this->secretKey 
+                ])
+                ->post("{$this->baseUrl}/send-message", [
+                    'number' => $number,
+                    'message' => $message,
+                    
+                    
+                ]);
 
             if ($response->successful()) {
+                Log::info("WA Sent to $number");
                 return true;
             }
             
@@ -99,6 +97,7 @@ class WhatsAppService
             return false;
 
         } catch (\Exception $e) {
+            
             Log::error("WA Error: " . $e->getMessage());
             return false;
         }

@@ -1,8 +1,7 @@
 <x-app-layout>
-    <div class="bg-gray-50/50 min-h-screen pb-12">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-6 py-8">
+    <div class="bg-gray-50/50 min-h-screen">
+        <div class="space-y-6">
             
-            {{-- Header & Action --}}
             <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 px-2">
                 <div>
                     <h1 class="text-2xl font-extrabold text-gray-900 tracking-tight">Catatan Pelanggaran</h1>
@@ -10,15 +9,14 @@
                 </div>
                 
                 <a href="{{ route('admin.student-violations.create') }}" 
-                   class="inline-flex items-center px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold rounded-xl shadow-lg shadow-indigo-500/30 transition-all duration-300 transform hover:-translate-y-0.5">
+                   class="inline-flex items-center px-6 py-3 bg-gradient-to-r from-orange-500 to-red-600 text-white font-bold rounded-xl hover:from-orange-600 hover:to-red-700 shadow-lg shadow-orange-500/30 transition-all transform hover:-translate-y-0.5">
                     <svg class="w-5 h-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
                     </svg>
                     Catat Pelanggaran
                 </a>
             </div>
-
-            {{-- Flash Message --}}
+            
             @if(session('success'))
                 <div x-data="{ show: true }" x-show="show" x-init="setTimeout(() => show = false, 3000)" 
                      class="bg-green-50 border-l-4 border-green-500 p-4 rounded-r-xl shadow-sm flex items-center justify-between">
@@ -31,7 +29,7 @@
                 </div>
             @endif
 
-            {{-- Search Bar --}}
+            
             <div class="bg-white p-2 rounded-2xl shadow-sm border border-gray-100 max-w-lg">
                 <form method="GET" class="relative flex items-center w-full">
                     <svg class="absolute left-3 w-5 h-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -50,13 +48,13 @@
                 </form>
             </div>
 
-            {{-- Include Table Partial --}}
+            
             @include('admin.violations._table_rows')
 
         </div>
     </div>
 
-    {{-- MODAL ZOOM FOTO --}}
+    
     <div id="photoModal" class="fixed inset-0 z-50 hidden" aria-labelledby="modal-title" role="dialog" aria-modal="true">
         <div class="fixed inset-0 bg-black/90 backdrop-blur-sm transition-opacity" onclick="closePhotoModal()"></div>
 
@@ -64,7 +62,7 @@
             <div class="flex min-h-full items-center justify-center p-4 text-center sm:p-0">
                 <div class="relative transform overflow-hidden rounded-2xl bg-white text-left shadow-2xl transition-all sm:my-8 sm:w-full sm:max-w-4xl">
                     
-                    {{-- Header Modal --}}
+                    
                     <div class="bg-white px-4 py-3 flex justify-between items-center border-b border-gray-100">
                         <h3 class="text-base font-bold text-gray-900 flex items-center gap-2">
                             <svg class="w-5 h-5 text-indigo-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
@@ -75,12 +73,12 @@
                         </button>
                     </div>
 
-                    {{-- Image Container --}}
+                    
                     <div class="bg-black/5 p-4 flex justify-center items-center min-h-[300px]">
                         <img id="modalImage" src="" class="max-h-[75vh] max-w-full object-contain rounded-lg shadow-md">
                     </div>
                     
-                    {{-- Footer Info --}}
+                    
                     <div class="bg-white px-4 py-3 border-t border-gray-100">
                         <p id="modalStudentName" class="text-sm font-semibold text-gray-800"></p>
                     </div>

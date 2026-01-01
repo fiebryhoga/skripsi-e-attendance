@@ -12,23 +12,23 @@ class StudentsImport implements ToModel, WithHeadingRow, WithValidation
 {
     public function model(array $row)
     {
-        // 1. Logika Mencari ID Kelas
-        // Mencari kelas berdasarkan nama (Misal: X-RPL-1)
-        // Pastikan nama di Excel SAMA PERSIS dengan nama di database classrooms
+        
+        
+        
         $classroom = Classroom::where('name', $row['nama_kelas'])->first();
 
-        // 2. Mapping Data
-        // Perhatikan key array ($row['...']) harus sesuai dengan Header Excel yang di-lowercase
-        // Header "JENIS KELAMIN (L/P)" akan terbaca 'jenis_kelamin_lp'
+        
+        
+        
         
         return new Student([
             'nis'           => $row['nis'],
-            'name'          => $row['nama_lengkap'], // Dari header 'NAMA LENGKAP'
+            'name'          => $row['nama_lengkap'], 
             'gender'        => $this->mapGender($row['jenis_kelamin_lp'] ?? $row['jenis_kelamin']), 
             'religion'      => $row['agama'],
             'nisn'          => $row['nisn'],
             'angkatan'      => $row['angkatan'],
-            'phone_parent'  => $row['nomor_ortu'], // Dari header 'NOMOR ORTU'
+            'phone_parent'  => $row['nomor_ortu'], 
             'classroom_id'  => $classroom ? $classroom->id : null, 
             'photo'         => null,
         ]);

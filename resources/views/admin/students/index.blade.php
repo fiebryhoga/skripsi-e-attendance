@@ -1,7 +1,7 @@
 <x-app-layout>
     <x-slot name="header">Data Siswa</x-slot>
 
-    <div class="flex flex-col md:flex-row justify-between items-end md:items-center gap-4 mb-8" 
+    <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8" 
          x-data="{ showImportModal: false, fileName: null }">
         
         <div>

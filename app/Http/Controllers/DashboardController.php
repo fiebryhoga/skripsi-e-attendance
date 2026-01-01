@@ -18,27 +18,27 @@ class DashboardController extends Controller
     {
         $user = Auth::user();
 
-        // 1. DASHBOARD ADMIN
+        
         if ($user->hasRole(UserRole::ADMIN)) {
             return $this->adminDashboard();
         }
 
-        // 2. DASHBOARD TATA TERTIB
-        // PERBAIKAN: Ganti TATA_TERTIB menjadi GURU_TATIB
+        
+        
         if ($user->hasRole(UserRole::GURU_TATIB)) {
             return $this->tatibDashboard();
         }
 
-        // 3. DASHBOARD WALI KELAS
+        
         if ($user->hasRole(UserRole::WALI_KELAS)) {
             return $this->waliKelasDashboard($user);
         }
 
-        // 4. DASHBOARD GURU BIASA
+        
         return $this->guruDashboard($user);
     }
 
-    // --- LOGIC PER ROLE ---
+    
 
     private function adminDashboard()
     {
@@ -50,7 +50,7 @@ class DashboardController extends Controller
         $recentViolations = Violation::with(['student.classroom', 'category'])
             ->latest('created_at')->take(5)->get();
 
-        // Pastikan model Student punya relasi 'violations'
+        
         $topViolators = Student::with('classroom')
             ->withCount('violations')
             ->having('violations_count', '>', 0)
@@ -69,7 +69,7 @@ class DashboardController extends Controller
             ->whereDate('tanggal', Carbon::today())
             ->latest('created_at')->get();
 
-        // Error pertama tadi solved karena kita sudah tambah relasi violations() di model ViolationCategory
+        
         $topCategories = \App\Models\ViolationCategory::withCount('violations')
             ->orderByDesc('violations_count')
             ->take(5)->get();
@@ -79,11 +79,11 @@ class DashboardController extends Controller
 
     private function waliKelasDashboard($user)
     {
-        // Ambil semua kelas binaan, pilih yang pertama
+        
         $classroom = $user->supervisedClassrooms->first();
 
         if (!$classroom) {
-            // Pastikan view dashboard.empty sudah dibuat, atau return view polos
+            
             return view('dashboard.guru', ['todaySchedules' => collect([])])->with('warning', 'Anda belum diassign ke kelas manapun.');
         }
 
@@ -111,18 +111,18 @@ class DashboardController extends Controller
 
     private function guruDashboard($user)
     {
-        // 1. Tentukan Nama Hari (Sesuaikan dengan isi database Anda)
-        // Jika Database pakai Bahasa Inggris (Monday, Tuesday): gunakan format('l')
-        // Jika Database pakai Bahasa Indonesia (Senin, Selasa): gunakan translatedFormat('l') dan pastikan Locale Laravel 'id'
         
-        $hariIni = Carbon::now()->format('l'); // Output: Wednesday
         
-        // PENTING: Cek nama kolom di tabel schedules database Anda. 
-        // Biasanya 'day' atau 'hari'. Di sini saya ubah jadi 'day'.
+        
+        
+        $hariIni = Carbon::now()->format('l'); 
+        
+        
+        
         
         $todaySchedules = Schedule::with(['classroom', 'subject'])
             ->where('user_id', $user->id)
-            ->where('day', $hariIni) // <--- Ganti 'hari' menjadi 'day'
+            ->where('day', $hariIni) 
             ->orderBy('jam_mulai')
             ->get();
 

@@ -30,8 +30,7 @@ class Student extends Model
     {
         return $this->hasMany(Violation::class);
     }
-
-    // --- TAMBAHKAN INI ---
+    
     public function attendances()
     {
         return $this->hasMany(StudentAttendance::class);

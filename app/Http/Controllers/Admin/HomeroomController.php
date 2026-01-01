@@ -7,13 +7,14 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Models\Student;
 use App\Models\StudentAttendance;
+use App\Models\Classroom;
 use App\Models\Violation;
 use App\Enums\UserRole;
 use Carbon\Carbon;
 
 class HomeroomController extends Controller
 {
-    // Tambahkan Request $request
+    
     public function index(Request $request)
     {
         $user = Auth::user();
@@ -22,32 +23,32 @@ class HomeroomController extends Controller
             abort(403, 'Anda bukan Wali Kelas.');
         }
 
-        // 1. AMBIL SEMUA KELAS BINAAN
+        
         $allClassrooms = $user->supervisedClassrooms;
 
         if ($allClassrooms->isEmpty()) {
             return view('admin.homeroom.no-class');
         }
 
-        // 2. TENTUKAN KELAS MANA YANG AKTIF DITAMPILKAN
-        // Jika user memilih via tab (ada di URL), pakai ID itu.
-        // Jika tidak, pakai ID kelas pertama.
+        
+        
+        
         $activeClassroomId = $request->get('classroom_id', $allClassrooms->first()->id);
         
-        // Cari object kelasnya dari collection (agar aman)
+        
         $classroom = $allClassrooms->firstWhere('id', $activeClassroomId);
 
-        // Validasi keamanan: Pastikan ID yang diminta benar-benar milik guru ini
+        
         if (!$classroom) {
             abort(403, 'Anda bukan Wali Kelas dari kelas ini.');
         }
 
-        // --- LOGIKA KE BAWAH SAMA PERSIS, TINGGAL PAKAI $classroom YANG SUDAH DIPILIH ---
+        
 
         $studentIds = Student::where('classroom_id', $classroom->id)->pluck('id');
-        $today = Carbon::today();
+        $today = Carbon::now('Asia/Jakarta')->format('Y-m-d');
 
-        // Data Presensi
+        
         $todayAbsences = StudentAttendance::whereIn('student_id', $studentIds)
                             ->whereDate('date', $today)
                             ->where('status', '!=', 'Hadir')
@@ -55,7 +56,7 @@ class HomeroomController extends Controller
                             ->orderBy('created_at', 'desc')
                             ->get();
 
-        // Data Pelanggaran
+        
         $latestViolations = Violation::whereIn('student_id', $studentIds)
                             ->with(['student', 'category']) 
                             ->orderBy('tanggal', 'desc')
@@ -63,7 +64,7 @@ class HomeroomController extends Controller
                             ->take(5)
                             ->get();
 
-        // Rekap Siswa
+        
         $students = Student::where('classroom_id', $classroom->id)
                     ->orderBy('name')
                     ->withCount([
@@ -80,7 +81,7 @@ class HomeroomController extends Controller
                     ->with('violations.category') 
                     ->get();
 
-        // Kirim $allClassrooms juga ke view untuk membuat Tab Navigasi
+        
         return view('admin.homeroom.index', compact(
             'allClassrooms', 
             'classroom', 
@@ -88,5 +89,61 @@ class HomeroomController extends Controller
             'latestViolations', 
             'students'
         ));
+    }
+
+    
+
+    public function show(Student $student)
+    {
+        $user = Auth::user();
+        
+        
+        if (!$user->hasRole(UserRole::ADMIN)) {
+            $myClassroom = Classroom::where('teacher_id', $user->id)->first();
+            if (!$myClassroom || $student->classroom_id != $myClassroom->id) {
+                abort(403, 'Anda tidak berhak melihat detail siswa dari kelas lain.');
+            }
+        }
+
+        
+        $student->load(['violations.category', 'violations.reporter', 'classroom']);
+
+        
+        
+        $totalEntries = StudentAttendance::where('student_id', $student->id)->count();
+        
+        
+        $totalHadir = StudentAttendance::where('student_id', $student->id)
+                        ->where('status', 'Hadir')
+                        ->count();
+
+        
+        $attendancePercentage = $totalEntries > 0 
+            ? round(($totalHadir / $totalEntries) * 100) 
+            : 0; 
+
+        
+        return view('admin.homeroom.show', compact('student', 'attendancePercentage', 'totalHadir', 'totalEntries'));
+    }
+
+    public function violations(Classroom $classroom)
+    {
+        $user = Auth::user();
+
+        
+        if (!$user->hasRole(UserRole::ADMIN) && $classroom->teacher_id != $user->id) {
+            abort(403, 'Anda tidak memiliki akses ke kelas ini.');
+        }
+
+        
+        $violations = Violation::whereHas('student', function($q) use ($classroom) {
+                            $q->where('classroom_id', $classroom->id);
+                        })
+                        ->with(['student', 'category', 'reporter'])
+                        ->orderBy('tanggal', 'desc')
+                        ->orderBy('created_at', 'desc')
+                        ->paginate(20);
+
+        return view('admin.homeroom.violations', compact('classroom', 'violations'));
     }
 }

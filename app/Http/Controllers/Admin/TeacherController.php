@@ -18,10 +18,10 @@ class TeacherController extends Controller
 {
     public function index(Request $request)
     {
-        // 1. HAPUS 'with('roles')' karena roles bukan relasi, tapi kolom biasa (automatis ter-load)
+        
         $query = User::query(); 
 
-        // Filter Pencarian
+        
         if ($request->filled('search')) {
             $search = $request->search;
             $query->where(function($q) use ($search) {
@@ -32,15 +32,15 @@ class TeacherController extends Controller
             });
         }
 
-        // 2. GANTI 'whereHas' MENJADI Pengecekan Kolom
-        // Kita cari user yang kolom roles-nya TIDAK NULL dan TIDAK KOSONG (bukan "[]")
+        
+        
         $query->whereNotNull('roles')
               ->where('roles', '!=', '[]'); 
 
-        // 3. Ambil data
+        
         $teachersCollection = $query->get();
 
-        // 4. Sorting Manual (Logika tetap sama seperti sebelumnya)
+        
         $sortedTeachers = $teachersCollection->sortBy(function ($user) {
             if ($user->hasRole(UserRole::ADMIN)) return 1;
             if ($user->hasRole(UserRole::WALI_KELAS)) return 2;
@@ -48,7 +48,7 @@ class TeacherController extends Controller
             return 4;
         });
 
-        // 5. Pagination Manual (Logika tetap sama)
+        
         $page = $request->input('page', 1);
         $perPage = 10;
         
@@ -77,8 +77,8 @@ class TeacherController extends Controller
             'nip' => 'required|string|unique:users,nip',
             'email' => 'nullable|email|unique:users,email',
             'password' => 'required|string|min:8',
-            'roles' => 'required|array', // Harus array
-            'roles.*' => [new Enum(UserRole::class)], // Tiap item harus valid Enum
+            'roles' => 'required|array', 
+            'roles.*' => [new Enum(UserRole::class)], 
             'avatar' => 'nullable|image|max:2048',
             'phone' => 'nullable|string|max:20',
         ]);
@@ -86,7 +86,7 @@ class TeacherController extends Controller
         $data = $request->except(['avatar', 'password']);
         $data['password'] = Hash::make($request->password);
         
-        // Handle Avatar
+        
         if ($request->hasFile('avatar')) {
             $data['avatar'] = $request->file('avatar')->store('avatars', 'public');
         }
@@ -113,9 +113,9 @@ class TeacherController extends Controller
             'phone' => 'nullable|string|max:20',
         ]);
 
-        $data = $request->except(['avatar', 'password', 'roles']); // Roles kita handle manual biar aman
+        $data = $request->except(['avatar', 'password', 'roles']); 
         
-        // Update Roles
+        
         $teacher->roles = $request->roles;
 
         if ($request->filled('password')) {
@@ -144,7 +144,7 @@ class TeacherController extends Controller
         return Excel::download(new TeacherTemplateExport, 'template_data_guru.xlsx');
     }
 
-    // 2. PROSES IMPORT
+    
     public function import(Request $request)
     {
         $request->validate([

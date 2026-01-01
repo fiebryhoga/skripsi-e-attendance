@@ -5,7 +5,7 @@ namespace App\Exports;
 use Maatwebsite\Excel\Concerns\FromCollection;
 use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Concerns\WithStyles;
-use Maatwebsite\Excel\Concerns\WithColumnWidths; // <--- Untuk lebar kolom
+use Maatwebsite\Excel\Concerns\WithColumnWidths; 
 use Maatwebsite\Excel\Concerns\WithEvents;
 use Maatwebsite\Excel\Events\AfterSheet;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
@@ -15,18 +15,16 @@ use PhpOffice\PhpSpreadsheet\Style\Border;
 
 class TeacherTemplateExport implements FromCollection, WithHeadings, WithStyles, WithColumnWidths, WithEvents
 {
-    /**
-     * Isi Baris ke-2 dengan CONTOH DATA
-     */
+
     public function collection()
     {
         return collect([
             [
-                '198001012010011001',       // NIP
-                'Contoh Guru (Hapus Ini)',  // Nama
-                'contoh@sekolah.sch.id',    // Email
-                '081234567890',             // HP
-                'password123',              // Password
+                '198001012010011001',       
+                'Contoh Guru (Hapus Ini)',  
+                'contoh@sekolah.sch.id',    
+                '081234567890',             
+                'password123',              
             ]
         ]);
     }
@@ -42,24 +40,21 @@ class TeacherTemplateExport implements FromCollection, WithHeadings, WithStyles,
         ];
     }
 
-    /**
-     * Atur Lebar Kolom Manual
-     */
     public function columnWidths(): array
     {
         return [
-            'A' => 25, // NIP
-            'B' => 40, // Nama Lengkap (Lebih Lebar)
-            'C' => 35, // Email (Lebih Lebar)
-            'D' => 20, // No HP
-            'E' => 15, // Password
+            'A' => 25, 
+            'B' => 40, 
+            'C' => 35, 
+            'D' => 20, 
+            'E' => 15, 
         ];
     }
 
     public function styles(Worksheet $sheet)
     {
         return [
-            // Style Baris 1 (Header): Background Biru, Teks Putih
+            
             1 => [
                 'font' => ['bold' => true, 'color' => ['argb' => 'FFFFFFFF'], 'size' => 12],
                 'fill' => [
@@ -68,7 +63,7 @@ class TeacherTemplateExport implements FromCollection, WithHeadings, WithStyles,
                 ],
                 'alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER, 'vertical' => Alignment::VERTICAL_CENTER],
             ],
-            // Style Baris 2 (Contoh Data): Warna Abu-abu & Miring (Supaya user sadar ini contoh)
+            
             2 => [
                 'font' => ['italic' => true, 'color' => ['argb' => 'FF555555']],
             ]
@@ -81,11 +76,11 @@ class TeacherTemplateExport implements FromCollection, WithHeadings, WithStyles,
             AfterSheet::class => function(AfterSheet $event) {
                 $sheet = $event->sheet;
                 
-                // Format Kolom NIP (A) dan HP (D) jadi TEXT agar angka 0 aman
+                
                 $sheet->getStyle('A:A')->getNumberFormat()->setFormatCode('@');
                 $sheet->getStyle('D:D')->getNumberFormat()->setFormatCode('@');
                 
-                // Tambahkan Border Tipis ke seluruh sel yang ada datanya
+                
                 $highestRow = $sheet->getHighestRow();
                 $highestColumn = $sheet->getHighestColumn();
                 

@@ -12,7 +12,6 @@ return new class extends Migration
     public function up()
     {
         Schema::table('violations', function (Blueprint $table) {
-            // Menambahkan kolom bukti_foto yang boleh kosong (nullable)
             $table->string('bukti_foto')->nullable()->after('catatan');
         });
     }

@@ -1,7 +1,7 @@
 <x-app-layout>
     <x-slot name="header">Mata Pelajaran</x-slot>
 
-    {{-- Alert --}}
+    
     @if(session('success'))
         <div x-data="{ show: true }" x-show="show" class="mb-6 p-4 bg-green-50 border border-green-100 text-green-700 rounded-xl flex justify-between items-center shadow-sm">
             <span class="flex items-center gap-2">
@@ -12,7 +12,7 @@
         </div>
     @endif
 
-    {{-- Error Validasi Global --}}
+    
     @if($errors->any())
         <div class="mb-6 p-4 bg-red-50 border border-red-100 text-red-700 rounded-xl shadow-sm">
             <ul class="list-disc list-inside text-sm">
@@ -25,7 +25,7 @@
 
     <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
         
-        {{-- KOLOM KIRI: FORM TAMBAH --}}
+        
         <div class="md:col-span-1">
             <div class="bg-white rounded-3xl shadow-xl shadow-gray-100/50 border border-gray-100 p-6 sticky top-24">
                 <div class="flex items-center gap-3 mb-6">
@@ -55,11 +55,11 @@
             </div>
         </div>
 
-        {{-- KOLOM KANAN: DAFTAR MAPEL --}}
+        
         <div class="md:col-span-2">
             <div class="bg-white rounded-3xl shadow-xl shadow-gray-100/50 border border-gray-100 overflow-hidden">
                 
-                {{-- Header & Search --}}
+                
                 <div class="p-6 border-b border-gray-100 flex flex-col sm:flex-row justify-between items-center gap-4 bg-gray-50/30">
                     <h3 class="font-bold text-gray-800 text-lg">Daftar Mata Pelajaran</h3>
                     <form method="GET" class="relative w-full sm:w-64">
@@ -83,7 +83,7 @@
                             @forelse($subjects as $subject)
                                 <tr class="hover:bg-indigo-50/30 transition-colors group">
                                     
-                                    {{-- Tampilan Normal --}}
+                                    
                                     <template x-if="editingId !== {{ $subject->id }}">
                                         <td class="px-6 py-4 font-mono text-indigo-600 font-bold bg-indigo-50/50 rounded-r-lg">
                                             {{ $subject->kode }}
@@ -110,7 +110,7 @@
                                         </td>
                                     </template>
 
-                                    {{-- Tampilan Edit (Inline Form) --}}
+                                    
                                     <template x-if="editingId === {{ $subject->id }}">
                                         <td colspan="3" class="px-6 py-4 bg-yellow-50/50">
                                             <form action="{{ route('admin.subjects.update', $subject) }}" method="POST" class="flex gap-3 items-center w-full">

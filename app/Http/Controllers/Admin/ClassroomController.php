@@ -33,22 +33,22 @@ class ClassroomController extends Controller
 
 
         $classroom->load(['students' => function ($query) {
-        $query->orderBy('name', 'asc');
-    }, 'teacher']);
+            $query->orderBy('name', 'asc');
+        }, 'teacher']);
         
         $teachers = User::all()->filter(function ($user) {
             return $user->hasRole(UserRole::WALI_KELAS) || 
                    $user->hasRole(UserRole::GURU_MAPEL);
         })->sortBy('name')->values();
 
-        // PERUBAHAN DI SINI:
-        // Ambil semua siswa KECUALI yang sudah ada di kelas yang sedang dibuka.
-        // Jadi siswa dari kelas lain (X-B, XI-A, dll) akan muncul di list.
+        
+        
+        
         $availableStudents = Student::where(function($query) use ($classroom) {
                                     $query->where('classroom_id', '!=', $classroom->id)
                                           ->orWhereNull('classroom_id');
                                 })
-                                ->with('classroom') // Load relasi classroom untuk label di dropdown
+                                ->with('classroom') 
                                 ->orderBy('name')
                                 ->get();
 
@@ -68,23 +68,23 @@ class ClassroomController extends Controller
         if ($request->teacher_id) {
             $teacher = User::find($request->teacher_id);
             
-            // PERBAIKAN LOGIKA UPDATE ROLE:
-            // Jika guru tersebut belum punya role Wali Kelas, tambahkan role tersebut.
-            // Kita tidak me-replace role lama, tapi menambahkan (karena array).
+            
+            
+            
             
             if (!$teacher->hasRole(UserRole::WALI_KELAS)) {
-                // Ambil roles yang ada sekarang
+                
                 $currentRoles = $teacher->roles ?? [];
                 
-                // Jika tipe datanya Collection (karena Cast), ubah ke array dulu
+                
                 if ($currentRoles instanceof \Illuminate\Support\Collection) {
                     $currentRoles = $currentRoles->toArray();
                 }
 
-                // Tambahkan role baru ke array
+                
                 $currentRoles[] = UserRole::WALI_KELAS;
 
-                // Simpan kembali
+                
                 $teacher->roles = $currentRoles;
                 $teacher->save();
             }
@@ -106,13 +106,13 @@ class ClassroomController extends Controller
         
         $student = Student::findOrFail($request->student_id);
         
-        // Simpan nama kelas lama untuk keperluan notifikasi
+        
         $oldClass = $student->classroom; 
 
-        // Update ke kelas baru
+        
         $student->update(['classroom_id' => $classroom->id]);
 
-        // Cek Logika Notifikasi: Pindahan atau Masuk Baru?
+        
         if ($oldClass) {
             $message = "Siswa {$student->name} berhasil dipindahkan dari {$oldClass->name} ke {$classroom->name}";
         } else {

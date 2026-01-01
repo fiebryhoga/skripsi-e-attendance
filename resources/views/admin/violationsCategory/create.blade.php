@@ -1,62 +1,98 @@
 <x-app-layout>
-    <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-            {{ __('Tambah Kategori Pelanggaran') }}
-        </h2>
-    </x-slot>
+    <div class="min-h-screen bg-gray-50/50">
+        <div class="">
+            
+            
+            <div class="mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                <div>
+                    <h2 class="text-3xl font-extrabold text-gray-900 tracking-tight">Tambah Kategori</h2>
+                    <p class="text-sm text-gray-500 mt-2">Buat jenis pelanggaran baru ke dalam sistem.</p>
+                </div>
+                <a href="{{ route('admin.violations.index') }}" 
+                   class="hidden md:inline-flex items-center px-4 py-2 bg-white border border-gray-200 rounded-xl text-sm font-medium text-gray-600 hover:bg-gray-50 hover:text-gray-900 transition-all shadow-sm">
+                    Kembali
+                </a>
+            </div>
 
-    <div class="py-12">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
-                <div class="p-6 text-gray-900">
-                    
-                    {{-- PERBAIKAN: Menggunakan route 'admin.violations.store' sesuai error trace --}}
-                    <form action="{{ route('admin.violations.store') }}" method="POST">
+            <div class="bg-white rounded-3xl shadow-xl shadow-gray-200/50 border border-gray-100 overflow-hidden">
+                
+                <div class="h-2 bg-gradient-to-r from-orange-400 via-red-500 to-pink-500"></div>
+
+                <div class="p-8 md:p-10">
+                    <form action="{{ route('admin.violations.store') }}" method="POST" class="space-y-8">
                         @csrf
-        
-                        <div class="mb-4">
-                            <label for="grup" class="block font-medium text-sm text-gray-700">Grup Pelanggaran</label>
-                            <select name="grup" id="grup" class="border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm block w-full mt-1 @error('grup') border-red-500 @enderror">
-                                <option value="">-- Pilih Grup --</option>
-                                <option value="A">Grup A (Pelanggaran Ringan)</option>
-                                <option value="B">Grup B (Pelanggaran Sedang)</option>
-                                <option value="C">Grup C (Pelanggaran Berat)</option>
-                                <option value="D">Grup D (Sangat Berat)</option>
-                            </select>
-                            @error('grup')
-                                <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
-                            @enderror
-                        </div>
-        
-                        <div class="mb-4">
-                            <label for="kode" class="block font-medium text-sm text-gray-700">Kode Pelanggaran</label>
-                            <input type="text" name="kode" class="border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm block w-full mt-1 @error('kode') border-red-500 @enderror" value="{{ old('kode') }}" placeholder="Contoh: A01">
-                            @error('kode')
-                                <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
-                            @enderror
-                        </div>
-        
-                        <div class="mb-4">
-                            <label for="deskripsi" class="block font-medium text-sm text-gray-700">Deskripsi</label>
-                            <textarea name="deskripsi" class="border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm block w-full mt-1 @error('deskripsi') border-red-500 @enderror" rows="3">{{ old('deskripsi') }}</textarea>
-                            @error('deskripsi')
-                                <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
-                            @enderror
-                        </div>
+
                         
-                        <div class="mb-4">
-                            <label for="poin" class="block font-medium text-sm text-gray-700">Poin</label>
-                            <input type="number" name="poin" class="border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm block w-full mt-1" value="{{ old('poin') }}">
+                        <div>
+                            <h3 class="text-lg font-bold text-gray-900 flex items-center gap-2 mb-6">
+                                <span class="flex items-center justify-center w-8 h-8 rounded-full bg-orange-100 text-orange-600 text-xs font-extrabold">01</span>
+                                Klasifikasi
+                            </h3>
+                            
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div>
+                                    <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Grup Pelanggaran</label>
+                                    <div class="relative">
+                                        <select name="grup" class="block w-full border-gray-200 rounded-xl focus:ring-4 focus:ring-orange-500/10 focus:border-orange-500 text-gray-800 font-medium py-3 shadow-sm transition-all appearance-none cursor-pointer">
+                                            <option value="">Pilih Grup...</option>
+                                            <option value="A" {{ old('grup') == 'A' ? 'selected' : '' }}>Grup A (Ringan)</option>
+                                            <option value="B" {{ old('grup') == 'B' ? 'selected' : '' }}>Grup B (Sedang)</option>
+                                            <option value="C" {{ old('grup') == 'C' ? 'selected' : '' }}>Grup C (Berat)</option>
+                                        </select>
+                                        <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-gray-500">
+                                            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>
+                                        </div>
+                                    </div>
+                                    @error('grup')
+                                        <p class="text-red-500 text-xs mt-2 font-medium flex items-center gap-1">
+                                            <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                                            {{ $message }}
+                                        </p>
+                                    @enderror
+                                </div>
+
+                                <div>
+                                    <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Kode Pelanggaran</label>
+                                    <input type="text" name="kode" value="{{ old('kode') }}" placeholder="Contoh: A01"
+                                           class="block w-full border-gray-200 rounded-xl focus:ring-4 focus:ring-orange-500/10 focus:border-orange-500 text-gray-800 font-bold py-3 shadow-sm transition-all placeholder:font-normal">
+                                    @error('kode')
+                                        <p class="text-red-500 text-xs mt-2 font-medium">{{ $message }}</p>
+                                    @enderror
+                                </div>
+                            </div>
                         </div>
-        
-                        <div class="flex items-center gap-4">
-                            <button type="submit" class="inline-flex items-center px-4 py-2 bg-gray-800 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-gray-700 focus:bg-gray-700 active:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition ease-in-out duration-150">
-                                Simpan
+
+                        <hr class="border-gray-50">
+
+                        
+                        <div>
+                            <h3 class="text-lg font-bold text-gray-900 flex items-center gap-2 mb-6">
+                                <span class="flex items-center justify-center w-8 h-8 rounded-full bg-red-100 text-red-600 text-xs font-extrabold">02</span>
+                                Detail Informasi
+                            </h3>
+
+                            <div class="space-y-6">
+                                <div>
+                                    <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Deskripsi Pelanggaran</label>
+                                    <textarea name="deskripsi" rows="3" placeholder="Jelaskan detail pelanggaran..."
+                                              class="block w-full border-gray-200 rounded-xl focus:ring-4 focus:ring-red-500/10 focus:border-red-500 text-gray-800 py-3 shadow-sm transition-all">{{ old('deskripsi') }}</textarea>
+                                    @error('deskripsi')
+                                        <p class="text-red-500 text-xs mt-2 font-medium">{{ $message }}</p>
+                                    @enderror
+                                </div>
+                            </div>
+                        </div>
+
+                        
+                        <div class="pt-6 border-t border-gray-50 flex items-center justify-end gap-3">
+                            <a href="{{ route('admin.violations.index') }}" class="px-6 py-3 bg-white text-gray-700 font-bold rounded-xl border border-gray-200 hover:bg-gray-50 hover:border-gray-300 transition-all">
+                                Batal
+                            </a>
+                            <button type="submit" class="px-8 py-3 bg-gradient-to-r from-orange-500 to-red-600 text-white font-bold rounded-xl hover:from-orange-600 hover:to-red-700 shadow-lg shadow-orange-500/30 hover:shadow-orange-500/50 transition-all transform hover:-translate-y-0.5">
+                                Simpan Data
                             </button>
-                            <a href="{{ route('admin.violations.index') }}" class="text-gray-600 hover:text-gray-900">Kembali</a>
                         </div>
                     </form>
-
                 </div>
             </div>
         </div>

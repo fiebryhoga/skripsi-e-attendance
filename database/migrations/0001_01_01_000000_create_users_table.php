@@ -9,9 +9,9 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('users', function (Blueprint $table) {
-            $table->id(); // KEMBALI KE ID
+            $table->id(); 
             
-            // NIP: Wajib diisi & Tidak boleh kembar, tapi bukan Primary Key
+            
             $table->string('nip')->unique(); 
             
             $table->string('name');
@@ -34,7 +34,7 @@ return new class extends Migration
         Schema::create('sessions', function (Blueprint $table) {
             $table->string('id')->primary();
             
-            // KEMBALIKAN KE FOREIGN ID (Integer)
+            
             $table->foreignId('user_id')->nullable()->index(); 
             
             $table->string('ip_address', 45)->nullable();

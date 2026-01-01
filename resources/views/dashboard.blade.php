@@ -1,9 +1,11 @@
 <x-app-layout>
-    <div class="py-12 bg-gray-50/50 min-h-screen">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-8">
 
-            {{-- 1. HEADER SECTION --}}
-            <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <x-slot name="header">Dashboard</x-slot>
+
+        <div class="flex flex-col md:flex-row justify-between items-start md:items-start gap-4 mb-8 bg-red-200" >
+
+            
+            <div class="flex flex-col md:flex-row md:items-start justify-between gap-4 bg-green-900">
                 <div>
                     <h1 class="text-3xl font-extrabold text-gray-800 tracking-tight">
                         Dashboard Ikhtisar
@@ -18,10 +20,10 @@
                 </div>
             </div>
 
-            {{-- 2. STATS CARDS --}}
+            
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
                 
-                {{-- Card 1: Total Siswa --}}
+                
                 <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
                     <div class="flex items-center justify-between mb-4">
                         <div class="p-3 bg-blue-50 text-blue-600 rounded-xl">
@@ -35,7 +37,7 @@
                     </div>
                 </div>
 
-                {{-- Card 2: Total Pelanggaran --}}
+                
                 <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
                     <div class="flex items-center justify-between mb-4">
                         <div class="p-3 bg-red-50 text-red-600 rounded-xl">
@@ -49,7 +51,7 @@
                     </div>
                 </div>
 
-                {{-- Card 3: Pelanggaran Hari Ini --}}
+                
                 <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow relative overflow-hidden">
                     <div class="absolute right-0 top-0 h-full w-1 bg-gradient-to-b from-orange-400 to-orange-600"></div>
                     <div class="flex items-center justify-between mb-4">
@@ -64,7 +66,7 @@
                     </div>
                 </div>
 
-                {{-- Card 4: Total Kelas --}}
+                
                 <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
                     <div class="flex items-center justify-between mb-4">
                         <div class="p-3 bg-indigo-50 text-indigo-600 rounded-xl">
@@ -79,10 +81,10 @@
                 </div>
             </div>
 
-            {{-- 3. CONTENT SECTION (Split 2 Columns) --}}
+            
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 
-                {{-- LEFT COLUMN: Recent Violations (Makan 2/3 layar) --}}
+                
                 <div class="lg:col-span-2 space-y-6">
                     <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
                         <div class="px-6 py-5 border-b border-gray-100 flex justify-between items-center bg-gray-50/30">
@@ -133,7 +135,7 @@
                     </div>
                 </div>
 
-                {{-- RIGHT COLUMN: Top Violators (Makan 1/3 layar) --}}
+                
                 <div class="space-y-6">
                     <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
                         <h3 class="font-bold text-gray-800 text-lg mb-4 flex items-center gap-2">
@@ -175,5 +177,4 @@
             </div>
 
         </div>
-    </div>
 </x-app-layout>

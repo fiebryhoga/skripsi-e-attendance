@@ -8,26 +8,35 @@ use App\Models\Violation;
 use App\Models\ViolationCategory;
 use App\Models\Classroom;
 use App\Models\Student;
+use App\Models\User;
 use App\Services\WhatsAppService;
+use App\Notifications\DataChangedNotification;
+use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use Carbon\Carbon;
 
 class StudentViolationController extends Controller
-{
-    /**
-     * Menampilkan daftar pelanggaran dengan fitur pencarian.
-     */
+{    
+    private function getNotificationRecipients()
+    {
+        return User::where(function($query) {
+             $query->whereJsonContains('roles', 'admin')
+                   ->orWhereJsonContains('roles', 'guru_tatib');
+        })->get();
+    }
+
     public function index(Request $request)
     {
         $query = Violation::with(['student.classroom', 'category', 'reporter'])
             ->latest('tanggal')
             ->latest('created_at');
 
-        if ($request->has('search') && $request->search != '') {
+        if ($request->filled('search')) {
             $search = $request->search;
             $query->whereHas('student', function($q) use ($search) {
                 $q->where('name', 'like', "%{$search}%")
+                  ->orWhere('nis', 'like', "%{$search}%") 
                   ->orWhereHas('classroom', function($sq) use ($search) {
                       $sq->where('name', 'like', "%{$search}%");
                   });
@@ -35,6 +44,10 @@ class StudentViolationController extends Controller
         }
 
         $violations = $query->paginate(10)->withQueryString();
+
+        if ($request->ajax()) {
+            return view('admin.violations._table_rows', compact('violations'))->render();
+        }
 
         return view('admin.violations.index', compact('violations'));
     }
@@ -71,11 +84,26 @@ class StudentViolationController extends Controller
 
         $violation = Violation::create($data);
 
-        // Kirim Notifikasi
+        
         $this->sendViolationNotification($violation, $waService);
+
+        $violation->load(['student', 'category']);
+        $recipients = $this->getNotificationRecipients();
+        Notification::send($recipients, new DataChangedNotification(
+            'Pelanggaran Baru: ' . $violation->student->name . ' - ' . $violation->category->kode
+        ));
 
         return redirect()->route('admin.student-violations.index')
             ->with('success', 'Data pelanggaran berhasil dicatat dan notifikasi dikirim.');
+    }
+
+    public function show($id)
+    {
+        
+        $violation = Violation::with(['student.classroom', 'category', 'reporter'])
+            ->findOrFail($id);
+
+        return view('admin.violations.show', compact('violation'));
     }
 
     public function edit($id)
@@ -89,6 +117,7 @@ class StudentViolationController extends Controller
         $categories = ViolationCategory::orderBy('grup')
                         ->orderBy('kode')
                         ->get();
+                        
 
         return view('admin.violations.edit', compact('violation', 'classrooms', 'categories'));
     }
@@ -116,12 +145,22 @@ class StudentViolationController extends Controller
 
         $violation->update($data);
 
-        // Anti Spam: Hanya kirim jika Kategori, Tanggal, atau Siswa berubah
+        
         if ($violation->wasChanged(['violation_category_id', 'tanggal', 'student_id'])) {
             $this->sendViolationNotification($violation, $waService);
             $message = 'Data diperbarui dan notifikasi revisi dikirim.';
         } else {
             $message = 'Data diperbarui (Tanpa notifikasi ulang).';
+        }
+
+        
+        if ($violation->wasChanged(['violation_category_id', 'tanggal', 'student_id'])) {
+                        
+            
+            $recipients = $this->getNotificationRecipients();
+            Notification::send($recipients, new DataChangedNotification(
+                'Update Pelanggaran: ' . $violation->student->name . ' (Data direvisi)'
+            ));
         }
 
         return redirect()->route('admin.student-violations.index')
@@ -130,24 +169,41 @@ class StudentViolationController extends Controller
 
     public function destroy($id)
     {
-        $violation = Violation::findOrFail($id);
+        
+        $violation = Violation::with(['student', 'category'])->findOrFail($id);
 
+        
+        $infoStudent = $violation->student->name ?? 'Siswa';
+        $infoCategory = $violation->category->kode ?? '-';
+
+        
         if ($violation->bukti_foto && Storage::disk('public')->exists($violation->bukti_foto)) {
             Storage::disk('public')->delete($violation->bukti_foto);
         }
 
+        
         $violation->delete();
 
-        return redirect()->back()->with('success', 'Data pelanggaran dihapus.');
+        
+        $recipients = $this->getNotificationRecipients();
+        
+        Notification::send($recipients, new DataChangedNotification(
+            'Pelanggaran Dihapus: ' . $infoStudent . ' (' . $infoCategory . ')',
+            'danger'
+        ));
+
+        
+        return redirect()->route('admin.student-violations.index')
+            ->with('success', 'Data pelanggaran berhasil dihapus.');
     }
 
-    // =========================================================================
-    // HELPER KIRIM WA (Updated: Pakai deskripsi & kode)
-    // =========================================================================
+    
+    
+    
     
     private function sendViolationNotification($violation, WhatsAppService $waService)
     {
-        // Load data student, classroom(teacher), dan category
+        
         $violation->load(['student.classroom.teacher', 'category']);
 
         $student = $violation->student;
@@ -155,33 +211,33 @@ class StudentViolationController extends Controller
         
         if (!$student || !$category) return;
 
-        // Data Wali Kelas (Gunakan relasi 'teacher' sesuai konfirmasi sebelumnya)
+        
         $waliKelas = $student->classroom->teacher ?? null;
         $nomorWaliKelas = ($waliKelas && !empty($waliKelas->phone)) ? $waliKelas->phone : null;
 
-        // Format Tanggal
+        
         Carbon::setLocale('id');
         $tanggalIndo = Carbon::parse($violation->tanggal)->translatedFormat('l, d F Y');
 
-        // --- 1. KIRIM KE ORANG TUA ---
+        
         if (!empty($student->phone_parent)) {
             $msgOrtu = $waService->formatViolationMessage(
                 $student->name,
-                $category->deskripsi, // <--- Pakai deskripsi
-                $category->kode,      // <--- Pakai kode
+                $category->deskripsi, 
+                $category->kode,      
                 $tanggalIndo,
                 $violation->catatan ?? '-'
             );
             $waService->send($student->phone_parent, $msgOrtu);
         }
 
-        // --- 2. KIRIM KE WALI KELAS ---
+        
         if ($nomorWaliKelas) {
             $msgGuru = $waService->formatViolationTeacherMessage(
                 $student->name,
                 $student->classroom->name,
-                $category->deskripsi, // <--- Pakai deskripsi
-                $category->kode,      // <--- Pakai kode
+                $category->deskripsi, 
+                $category->kode,      
                 $tanggalIndo
             );
             $waService->send($nomorWaliKelas, $msgGuru);

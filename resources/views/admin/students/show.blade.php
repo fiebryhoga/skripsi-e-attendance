@@ -10,7 +10,7 @@
 
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
         
-        {{-- KOLOM KIRI: PROFIL (Tidak berubah banyak, hanya cleanup) --}}
+        
         <div class="lg:col-span-1">
             <div class="bg-white rounded-3xl shadow-xl shadow-gray-100/50 overflow-hidden border border-gray-100 relative">
                 <div class="h-32 bg-gradient-to-r from-indigo-500 to-violet-600"></div>
@@ -63,12 +63,12 @@
             </div>
         </div>
 
-        {{-- KOLOM KANAN: STATISTIK & HISTORY --}}
+        
         <div class="lg:col-span-2 space-y-6">
             
-            {{-- Statistik Cards (TANPA POIN) --}}
+            
             <div class="grid grid-cols-2 gap-4">
-                {{-- Card 1: Total Pelanggaran --}}
+                
                 <div class="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 flex items-center justify-between">
                     <div>
                         <p class="text-xs text-gray-400 font-bold uppercase tracking-wider">Total Pelanggaran</p>
@@ -82,7 +82,7 @@
                     </div>
                 </div>
 
-                {{-- Card 2: Kehadiran (Static Example) --}}
+                
                 <div class="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 flex items-center justify-between">
                     <div>
                         <p class="text-xs text-gray-400 font-bold uppercase tracking-wider">Kehadiran</p>
@@ -94,7 +94,7 @@
                 </div>
             </div>
 
-            {{-- History Table Section --}}
+            
             <div class="bg-white rounded-3xl shadow-xl shadow-gray-100/50 border border-gray-100 overflow-hidden">
                 <div class="border-b border-gray-100 px-6 py-4 bg-gray-50/30 flex justify-between items-center">
                     <h3 class="font-bold text-gray-800">Riwayat Pelanggaran</h3>
@@ -110,7 +110,7 @@
                                 <tr class="bg-gray-50 text-gray-500 text-xs uppercase tracking-wider border-b border-gray-100">
                                     <th class="px-6 py-3 font-semibold">Tanggal</th>
                                     <th class="px-6 py-3 font-semibold">Jenis Pelanggaran</th>
-                                    {{-- Kolom Poin DIHAPUS --}}
+                                    
                                     <th class="px-6 py-3 font-semibold">Pelapor</th>
                                     <th class="px-6 py-3 font-semibold text-center">Aksi</th>
                                 </tr>
@@ -118,7 +118,7 @@
                             <tbody class="divide-y divide-gray-50">
                                 @foreach($student->violations as $violation)
                                     <tr class="hover:bg-indigo-50/30 transition-colors group">
-                                        {{-- Tanggal --}}
+                                        
                                         <td class="px-6 py-4">
                                             <span class="text-sm font-bold text-gray-700">
                                                 {{ \Carbon\Carbon::parse($violation->tanggal)->format('d/m/Y') }}
@@ -128,7 +128,7 @@
                                             </div>
                                         </td>
                                         
-                                        {{-- Jenis Pelanggaran --}}
+                                        
                                         <td class="px-6 py-4">
                                             <div class="text-sm font-medium text-gray-900">
                                                 {{ $violation->category->kode }}
@@ -138,14 +138,14 @@
                                             </div>
                                         </td>
 
-                                        {{-- Kolom Poin DIHAPUS --}}
+                                        
 
-                                        {{-- Pelapor --}}
+                                        
                                         <td class="px-6 py-4 text-xs text-gray-600">
                                             {{ $violation->reporter->name ?? 'System' }}
                                         </td>
 
-                                        {{-- Tombol Detail --}}
+                                        
                                         <td class="px-6 py-4 text-center">
                                             <a href="{{ route('admin.student-violations.show', $violation->id) }}" 
                                                class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-white border border-gray-200 text-gray-400 hover:text-indigo-600 hover:border-indigo-200 hover:bg-indigo-50 transition shadow-sm"
@@ -159,7 +159,7 @@
                         </table>
                     </div>
                 @else
-                    {{-- Tampilan Kosong (Default) --}}
+                    
                     <div class="p-6 text-center text-gray-400 py-12">
                         <svg class="w-16 h-16 mx-auto text-gray-200 mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
                         <p class="text-sm font-medium text-gray-500">Siswa ini bersih dari catatan pelanggaran.</p>

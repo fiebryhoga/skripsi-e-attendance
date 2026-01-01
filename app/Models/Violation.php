@@ -11,19 +11,19 @@ class Violation extends Model
 
     protected $guarded = ['id'];
 
-    // Relasi ke Siswa
+    
     public function student()
     {
         return $this->belongsTo(Student::class);
     }
 
-    // Relasi ke Kategori Pelanggaran
+    
     public function category()
     {
         return $this->belongsTo(ViolationCategory::class, 'violation_category_id');
     }
 
-    // Relasi ke Pelapor (Guru/Admin)
+    
     public function reporter()
     {
         return $this->belongsTo(User::class, 'user_id');

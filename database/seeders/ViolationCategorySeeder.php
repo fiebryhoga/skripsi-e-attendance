@@ -40,7 +40,7 @@ class ViolationCategorySeeder extends Seeder
 
         foreach ($data as $item) {
             ViolationCategory::updateOrCreate(
-                ['kode' => $item['kode']], // Cek berdasarkan kode agar tidak duplikat
+                ['kode' => $item['kode']],
                 $item
             );
         }

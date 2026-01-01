@@ -13,9 +13,9 @@
             </thead>
             <tbody class="divide-y divide-gray-50 bg-white">
                 @forelse($violations as $violation)
-                    <tr class="hover:bg-gray-50/80 transition-colors duration-200 group">
+                    <tr onclick="window.location='{{ route('admin.student-violations.show', $violation->id) }}'"
+                                class="hover:bg-indigo-50/30 transition-colors duration-200 group cursor-pointer relative">                        
                         
-                        {{-- Tanggal --}}
                         <td class="px-6 py-4 whitespace-nowrap">
                             <div class="text-sm font-bold text-gray-700">
                                 {{ \Carbon\Carbon::parse($violation->tanggal)->translatedFormat('d M Y') }}
@@ -25,7 +25,7 @@
                             </div>
                         </td>
 
-                        {{-- Siswa --}}
+                        
                         <td class="px-6 py-4">
                             <div class="flex items-center gap-3">
                                 <div class="w-8 h-8 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600 font-bold text-xs">
@@ -40,15 +40,15 @@
                             </div>
                         </td>
 
-                        {{-- Detail Pelanggaran (Deskripsi, Kode, Grup) --}}
+                        
                         <td class="px-6 py-4">
                             <div class="max-w-xs">
-                                {{-- Nama Pelanggaran (Deskripsi) --}}
+                                
                                 <div class="text-sm font-medium text-gray-800 mb-1">
                                     {{ $violation->category->deskripsi }}
                                 </div>
 
-                                {{-- Badges Kode & Grup --}}
+                                
                                 <div class="flex flex-wrap gap-1.5 mb-2">
                                     <span class="px-1.5 py-0.5 rounded border border-gray-200 text-[10px] font-mono text-gray-500 bg-white">
                                         {{ $violation->category->kode }}
@@ -69,7 +69,7 @@
                                     </span>
                                 </div>
 
-                                {{-- Catatan (Quote Style) --}}
+                                
                                 @if($violation->catatan)
                                     <div class="relative pl-3 text-xs italic text-gray-500 border-l-2 border-indigo-200">
                                         "{{ Str::limit($violation->catatan, 50) }}"
@@ -78,14 +78,14 @@
                             </div>
                         </td>
 
-                        {{-- Bukti Foto --}}
-                        <td class="px-6 py-4 text-center align-middle">
-                            @if($violation->bukti_foto)
+                        
+                        <td class="px-6 py-4 text-center align-middle" onclick="event.stopPropagation()">
+                                @if($violation->bukti_foto)
                                 <button onclick="openPhotoModal('{{ Storage::url($violation->bukti_foto) }}', '{{ addslashes($violation->student->name) }}')" 
                                         class="group/img relative inline-block w-12 h-12 rounded-lg overflow-hidden border border-gray-200 shadow-sm hover:shadow-md transition-all">
                                     <img src="{{ Storage::url($violation->bukti_foto) }}" class="w-full h-full object-cover transition-transform duration-500 group-hover/img:scale-110" alt="Bukti">
                                     
-                                    {{-- Overlay Icon Zoom --}}
+                                    
                                     <div class="absolute inset-0 bg-black/30 opacity-0 group-hover/img:opacity-100 transition-opacity flex items-center justify-center">
                                         <svg class="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
@@ -99,7 +99,7 @@
                             @endif
                         </td>
 
-                        {{-- Pelapor --}}
+                        
                         <td class="px-6 py-4 whitespace-nowrap">
                             <div class="flex items-center gap-2">
                                 <div class="w-6 h-6 rounded-full bg-gray-100 flex items-center justify-center">
@@ -111,11 +111,11 @@
                             </div>
                         </td>
 
-                        {{-- Aksi --}}
-                        <td class="px-6 py-4 text-center">
-                            <div class="flex items-center justify-center gap-2">
+                        
+                        <td class="px-6 py-4 text-center" onclick="event.stopPropagation()">
+                                <div class="flex items-center justify-center gap-2">
                                 
-                                {{-- Tombol Edit --}}
+                                
                                 <a href="{{ route('admin.student-violations.edit', $violation->id) }}" 
                                    class="text-gray-400 hover:text-indigo-600 transition-colors p-2 rounded-full hover:bg-indigo-50" 
                                    title="Edit Data">
@@ -124,7 +124,7 @@
                                     </svg>
                                 </a>
 
-                                {{-- Tombol Hapus --}}
+                                
                                 <form action="{{ route('admin.student-violations.destroy', $violation->id) }}" method="POST" onsubmit="return confirm('Hapus data pelanggaran ini? Data tidak bisa dikembalikan.');">
                                     @csrf @method('DELETE')
                                     <button type="submit" class="text-gray-400 hover:text-red-600 transition-colors p-2 rounded-full hover:bg-red-50" title="Hapus Data">
@@ -157,7 +157,7 @@
         </table>
     </div>
 
-    {{-- Pagination --}}
+    
     @if($violations->hasPages())
         <div class="px-6 py-4 border-t border-gray-100 bg-gray-50">
             {{ $violations->links() }}

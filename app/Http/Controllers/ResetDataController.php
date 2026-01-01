@@ -8,12 +8,16 @@ use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
 
-// PASTIKAN NAMA MODEL SESUAI FILE DI FOLDER APP/MODELS
+
+use App\Models\User;
 use App\Models\Student;
-use App\Models\Attendance;
+use App\Models\Classroom;
 use App\Models\Schedule;
-use App\Models\StudentViolation; // Pastikan nama filenya StudentViolation.php
-use App\Models\Violation;
+
+
+use App\Models\StudentAttendance;
+use App\Models\Violation;         
+use App\Models\ViolationCategory; 
 
 class ResetDataController extends Controller
 {
@@ -24,54 +28,134 @@ class ResetDataController extends Controller
 
     public function destroy(Request $request)
     {
-        // 1. Cek Password Admin
         if (!Hash::check($request->password_confirmation, auth()->user()->password)) {
-            return redirect()->route('settings.index')
-                ->with('error', 'Password salah! Reset dibatalkan.');
+            return redirect()->route('admin.settings.index')->with('error', 'Password salah! Proses dibatalkan.');
         }
 
-        // Matikan pengecekan relasi (Foreign Key) agar bisa truncate bebas
         Schema::disableForeignKeyConstraints();
 
         try {
-            // --- HAPUS DATA TABEL ---
-            // Kita tidak pakai DB::transaction karena truncate() di MySQL 
-            // menyebabkan konflik transaksi.
-            
-            // 1. Hapus Presensi
-            if (class_exists(Attendance::class)) Attendance::truncate();
+            $type = $request->type;
 
-            // 2. Hapus Pelanggaran Siswa
-            if (class_exists(StudentViolation::class)) StudentViolation::truncate();
-            
-            // 3. Hapus Master Kategori Pelanggaran (Opsional)
-            if (class_exists(Violation::class)) Violation::truncate();
+            switch ($type) {
+                case 'all':
+                    $this->resetAllData();
+                    $message = 'Sistem berhasil di-reset. Data Siswa & Guru dihapus, namun Data Kelas & Kategori tetap aman.';
+                    break;
 
-            // 4. Hapus Jadwal
-            if (class_exists(Schedule::class)) Schedule::truncate();
+                case 'semester':
+                    $this->resetSemester();
+                    $message = 'Data Semester (Jadwal & Presensi) berhasil di-reset.';
+                    break;
 
-            // 5. Hapus Siswa
-            if (class_exists(Student::class)) Student::truncate();
+                case 'academic_year':
+                    $this->resetAcademicYear();
+                    $message = 'Tahun Ajar berhasil di-reset. Siswa telah dinaikkan kelas.';
+                    break;
 
-            // --- HAPUS FILE FISIK ---
-            $folderFoto = 'public/students'; 
-            if (Storage::exists($folderFoto)) {
-                Storage::deleteDirectory($folderFoto);
-                Storage::makeDirectory($folderFoto);
+                default:
+                    return redirect()->route('admin.settings.index')->with('error', 'Tipe reset tidak dikenali.');
             }
 
-            // Nyalakan lagi pengecekan relasi (WAJIB)
             Schema::enableForeignKeyConstraints();
-
-            return redirect()->route('settings.index')
-                ->with('success', 'Sistem berhasil di-reset total.');
+            return redirect()->route('admin.settings.index')->with('success', $message);
 
         } catch (\Exception $e) {
-            // Jika error, pastikan pengaman dinyalakan lagi
             Schema::enableForeignKeyConstraints();
+            return redirect()->route('admin.settings.index')->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
+        }
+    }
+
+    
+    private function resetAllData()
+    {
+        
+        StudentAttendance::truncate(); 
+        Violation::truncate();         
+        Schedule::truncate();          
+        DB::table('notifications')->truncate();
+        
+        
+        Student::truncate();
+
+        
+        
+        
+
+        
+        
+        Classroom::query()->update(['teacher_id' => null]);
+
+        
+        User::where('id', '!=', auth()->id())->delete(); 
+
+        
+        $folderFoto = 'public/students'; 
+        if (Storage::exists($folderFoto)) {
+            Storage::deleteDirectory($folderFoto);
+            Storage::makeDirectory($folderFoto);
+        }
+        
+        $folderBukti = 'public/violations';
+        if (Storage::exists($folderBukti)) {
+            Storage::deleteDirectory($folderBukti);
+            Storage::makeDirectory($folderBukti);
+        }
+    }
+
+    
+    private function resetSemester()
+    {
+        Schedule::truncate();
+        StudentAttendance::truncate();
+    }
+
+    
+    private function resetAcademicYear()
+    {
+        Schedule::truncate();
+        StudentAttendance::truncate();
+
+        $students = Student::with('classroom')->get();
+        $classrooms = Classroom::all();
+
+        foreach ($students as $student) {
+            if (!$student->classroom) continue;
+
+            $currentName = strtoupper($student->classroom->name);
             
-            return redirect()->route('settings.index')
-                ->with('error', 'Gagal reset: ' . $e->getMessage());
+            if (str_contains($currentName, 'XII') || str_contains($currentName, '12')) {
+                if ($student->photo) Storage::delete($student->photo);
+                $student->delete();
+            } elseif (str_contains($currentName, 'XI') || str_contains($currentName, '11')) {
+                $newName = str_replace(['XI', '11'], ['XII', '12'], $currentName);
+                $this->moveStudentToClass($student, $newName, $classrooms);
+            } elseif (str_contains($currentName, 'X') || str_contains($currentName, '10')) {
+                $newName = null;
+                if (str_starts_with($currentName, 'X')) {
+                    $suffix = substr($currentName, 1);
+                    $newName = 'XI' . $suffix;
+                } elseif (str_starts_with($currentName, '10')) {
+                    $suffix = substr($currentName, 2); 
+                    $newName = '11' . $suffix;
+                }
+                if($newName) {
+                    $this->moveStudentToClass($student, $newName, $classrooms);
+                }
+            }
+        }
+    }
+
+    private function moveStudentToClass($student, $newClassName, $allClassrooms)
+    {
+        $targetClass = $allClassrooms->first(function($class) use ($newClassName) {
+            return strtoupper($class->name) === strtoupper($newClassName);
+        });
+
+        if ($targetClass) {
+            $student->update(['classroom_id' => $targetClass->id]);
+        } else {
+            $student->update(['classroom_id' => null]);
         }
     }
 }

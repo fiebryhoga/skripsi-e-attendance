@@ -1,8 +1,8 @@
 <x-app-layout>
-    <div class="py-12 bg-gray-50/50 min-h-screen">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-8">
+    <div class="bg-gray-50/50 min-h-screen">
+        <div class="space-y-8">
 
-            {{-- 1. HEADER SECTION --}}
+            
             <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div>
                     <h1 class="text-3xl font-extrabold text-gray-800 tracking-tight">
@@ -14,14 +14,14 @@
                 </div>
                 <div class="flex items-center gap-2 text-sm text-gray-500 bg-white px-4 py-2 rounded-xl shadow-sm border border-gray-100">
                     <svg class="w-5 h-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
-                    <span>{{ \Carbon\Carbon::now()->translatedFormat('l, d F Y') }}</span>
+                    <span>{{ \Carbon\Carbon::now()->locale('id')->translatedFormat('l, d F Y') }}</span>
                 </div>
             </div>
 
-            {{-- 2. STATS CARDS --}}
+            
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
                 
-                {{-- Card 1: Total Siswa --}}
+                
                 <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
                     <div class="flex items-center justify-between mb-4">
                         <div class="p-3 bg-blue-50 text-blue-600 rounded-xl">
@@ -31,17 +31,17 @@
                     </div>
                     <div class="flex items-end justify-between">
                         <h3 class="text-3xl font-black text-gray-800">{{ $totalStudents }}</h3>
-                        <span class="text-xs text-green-500 font-bold bg-green-50 px-2 py-1 rounded-lg">Aktif</span>
+                        <span class="text-xs text-green-500 font-semibold bg-green-50 px-2 py-1 rounded-lg">Aktif</span>
                     </div>
                 </div>
 
-                {{-- Card 2: Total Pelanggaran --}}
+                
                 <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
                     <div class="flex items-center justify-between mb-4">
                         <div class="p-3 bg-red-50 text-red-600 rounded-xl">
                             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
                         </div>
-                        <span class="text-xs font-bold text-gray-400 uppercase tracking-wider">Total Kasus</span>
+                        <span class="text-xs font-semibold text-gray-400 uppercase tracking-wider">Total Kasus</span>
                     </div>
                     <div class="flex items-end justify-between">
                         <h3 class="text-3xl font-black text-gray-800">{{ $totalViolations }}</h3>
@@ -49,7 +49,7 @@
                     </div>
                 </div>
 
-                {{-- Card 3: Pelanggaran Hari Ini --}}
+                
                 <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow relative overflow-hidden">
                     <div class="absolute right-0 top-0 h-full w-1 bg-gradient-to-b from-orange-400 to-orange-600"></div>
                     <div class="flex items-center justify-between mb-4">
@@ -60,11 +60,11 @@
                     </div>
                     <div class="flex items-end justify-between">
                         <h3 class="text-3xl font-black text-gray-800">{{ $todayViolations }}</h3>
-                        <span class="text-xs text-orange-600 font-bold bg-orange-50 px-2 py-1 rounded-lg">Kasus Baru</span>
+                        <span class="text-xs text-orange-600 font-semibold bg-orange-50 px-2 py-1 rounded-lg">Kasus Baru</span>
                     </div>
                 </div>
 
-                {{-- Card 4: Total Kelas --}}
+                
                 <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
                     <div class="flex items-center justify-between mb-4">
                         <div class="p-3 bg-indigo-50 text-indigo-600 rounded-xl">
@@ -74,15 +74,15 @@
                     </div>
                     <div class="flex items-end justify-between">
                         <h3 class="text-3xl font-black text-gray-800">{{ $totalClasses }}</h3>
-                        <span class="text-xs text-indigo-600 font-bold bg-indigo-50 px-2 py-1 rounded-lg">Rombel</span>
+                        <span class="text-xs text-indigo-600 font-semibold bg-indigo-50 px-2 py-1 rounded-lg">Rombel</span>
                     </div>
                 </div>
             </div>
 
-            {{-- 3. CONTENT SECTION (Split 2 Columns) --}}
+            
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 
-                {{-- LEFT COLUMN: Recent Violations (Makan 2/3 layar) --}}
+                
                 <div class="lg:col-span-2 space-y-6">
                     <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
                         <div class="px-6 py-5 border-b border-gray-100 flex justify-between items-center bg-gray-50/30">
@@ -133,7 +133,7 @@
                     </div>
                 </div>
 
-                {{-- RIGHT COLUMN: Top Violators (Makan 1/3 layar) --}}
+                
                 <div class="space-y-6">
                     <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
                         <h3 class="font-bold text-gray-800 text-lg mb-4 flex items-center gap-2">

@@ -13,8 +13,8 @@ return new class extends Migration
     {
         Schema::create('violation_categories', function (Blueprint $table) {
             $table->id();
-            $table->string('grup'); // A, B, C
-            $table->string('kode')->unique(); // A1, A2, dst
+            $table->string('grup'); 
+            $table->string('kode')->unique(); 
             $table->text('deskripsi');
             $table->timestamps();
         });

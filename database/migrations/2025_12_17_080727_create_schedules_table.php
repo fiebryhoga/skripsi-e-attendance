@@ -14,15 +14,15 @@ return new class extends Migration
         Schema::create('schedules', function (Blueprint $table) {
             $table->id();
             
-            // Relasi
+            
             $table->foreignId('classroom_id')->constrained()->cascadeOnDelete();
             $table->foreignId('subject_id')->constrained()->cascadeOnDelete();
-            $table->foreignId('user_id')->constrained('users')->cascadeOnDelete(); // Guru
+            $table->foreignId('user_id')->constrained('users')->cascadeOnDelete(); 
             
-            // Atribut Jadwal (Simpel)
+            
             $table->enum('day', ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu']);
-            $table->tinyInteger('jam_mulai');   // Contoh: 1
-            $table->tinyInteger('jam_selesai'); // Contoh: 3 (Berarti mengajar jam 1, 2, 3)
+            $table->tinyInteger('jam_mulai');   
+            $table->tinyInteger('jam_selesai'); 
             
             $table->timestamps();
         });

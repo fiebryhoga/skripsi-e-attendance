@@ -1,15 +1,16 @@
 <x-app-layout>
     <x-slot name="header">Jadwal Pelajaran</x-slot>
 
-    <div class="py-6">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+    <div class="">
+        <div class="">
+
             
             <div class="flex flex-col md:flex-row justify-between items-center mb-8 gap-4">
                 <div>
                     <h2 class="text-2xl font-bold text-gray-800">Atur Jadwal Pelajaran</h2>
                     <p class="text-sm text-gray-500">Pilih kelas untuk melihat atau mengubah jadwal.</p>
                 </div>
-                {{-- Search Bar Sederhana --}}
+                
                 <div x-data="{ search: '' }" class="relative w-full md:w-64">
                     <input type="text" x-model="search" placeholder="Cari Kelas..." 
                            class="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-xl focus:ring-indigo-500 focus:border-indigo-500 transition shadow-sm">
@@ -22,7 +23,7 @@
                     <a href="{{ route('admin.schedules.show', $classroom) }}" 
                        class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group relative overflow-hidden">
                         
-                        {{-- Color Stripe --}}
+                        
                         <div class="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r from-indigo-500 to-purple-500 opacity-0 group-hover:opacity-100 transition-opacity"></div>
 
                         <div class="flex justify-between items-start mb-4">

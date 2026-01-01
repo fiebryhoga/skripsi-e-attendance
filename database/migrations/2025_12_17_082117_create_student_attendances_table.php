@@ -16,7 +16,7 @@ return new class extends Migration
             $table->foreignId('student_id')->constrained()->cascadeOnDelete();
             $table->foreignId('classroom_id')->constrained(); 
             
-            // TAMBAHAN: Relasi ke Jadwal
+            
             $table->foreignId('schedule_id')->constrained()->cascadeOnDelete(); 
             
             $table->date('date'); 
@@ -24,8 +24,8 @@ return new class extends Migration
             $table->string('note')->nullable();
             $table->timestamps();
 
-            // UNIQUE KEY BERUBAH:
-            // 1 Siswa hanya boleh punya 1 status presensi, PADA TANGGAL TERTENTU, UNTUK JADWAL TERTENTU.
+            
+            
             $table->unique(['student_id', 'date', 'schedule_id'], 'unique_attendance'); 
         });
     }
