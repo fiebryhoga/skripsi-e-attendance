@@ -1,8 +1,6 @@
 <x-app-layout>
-    
     <link href="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/css/tom-select.css" rel="stylesheet">
     <style>
-        
         .ts-control {
             border-radius: 0.75rem; 
             padding: 0.75rem 1rem;
@@ -35,7 +33,6 @@
     <div class="min-h-screen bg-gray-50/50 py-8 sm:py-12">
         <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
             
-            
             <div class="mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                 <div>
                     <h2 class="text-2xl sm:text-3xl font-extrabold text-gray-900 tracking-tight">Catat Pelanggaran</h2>
@@ -50,7 +47,6 @@
                 </a>
             </div>
 
-            
             <div class="bg-white rounded-3xl shadow-xl shadow-gray-200/50 border border-gray-100 relative">
                 
                 <div class="h-2 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 rounded-t-3xl"></div>
@@ -59,16 +55,13 @@
                     <form action="{{ route('admin.student-violations.store') }}" method="POST" enctype="multipart/form-data" class="space-y-8">
                         @csrf
 
-                        
                         <div>
                             <h3 class="text-lg font-bold text-gray-900 flex items-center gap-2 mb-6">
                                 <span class="flex items-center justify-center w-8 h-8 rounded-full bg-indigo-100 text-indigo-600 text-xs font-bold">01</span>
                                 Data Utama
                             </h3>
                             
-                            
                             <div class="grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-6">
-                                
                                 
                                 <div class="sm:col-span-3">
                                     <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Tanggal</label>
@@ -76,7 +69,6 @@
                                         class="block w-full border-gray-200 rounded-xl text-gray-900 focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 shadow-sm sm:text-sm h-[46px]" required>
                                 </div>
 
-                                
                                 <div class="sm:col-span-6">
                                     <label for="student_id" class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">
                                         Cari Siswa (Nama / NIS / Kelas)
@@ -102,7 +94,6 @@
 
                         <hr class="border-gray-100">
 
-                        
                         <div>
                             <h3 class="text-lg font-bold text-gray-900 flex items-center gap-2 mb-6">
                                 <span class="flex items-center justify-center w-8 h-8 rounded-full bg-red-100 text-red-600 text-xs font-bold">02</span>
@@ -129,28 +120,30 @@
 
                                 <div>
                                     <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Bukti Foto</label>
-                                    <div class="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-xl hover:border-indigo-400 transition-colors bg-gray-50/50">
+                                    
+                                    <div class="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-xl hover:border-indigo-400 transition-colors bg-gray-50/50 relative group cursor-pointer" onclick="document.getElementById('file-upload').click()">
                                         <div class="space-y-1 text-center">
-                                            <svg class="mx-auto h-12 w-12 text-gray-400" stroke="currentColor" fill="none" viewBox="0 0 48 48" aria-hidden="true">
+                                            <svg class="mx-auto h-12 w-12 text-gray-400 group-hover:text-indigo-500 transition-colors" stroke="currentColor" fill="none" viewBox="0 0 48 48" aria-hidden="true">
                                                 <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
                                             </svg>
+                                            
                                             <div class="flex text-sm text-gray-600 justify-center">
-                                                <label for="file-upload" class="relative cursor-pointer bg-white rounded-md font-medium text-indigo-600 hover:text-indigo-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-indigo-500">
+                                                <label for="file-upload" class="relative cursor-pointer bg-white rounded-md font-medium text-indigo-600 hover:text-indigo-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-indigo-500 p-1">
                                                     <span>Upload file</span>
-                                                    <input id="file-upload" name="bukti_foto" type="file" accept="image/*" class="sr-only">
+                                                    <input id="file-upload" name="bukti_foto" type="file" accept="image/*" class="sr-only" onchange="updateFileName(this)">
                                                 </label>
-                                                <p class="pl-1">atau drag and drop</p>
+                                                <p class="pl-1 pt-1">atau drag and drop</p>
                                             </div>
-                                            <p class="text-xs text-gray-500">PNG, JPG, GIF up to 5MB</p>
+                                            <p class="text-xs text-gray-500">PNG, JPG, GIF max 5MB</p>
+                                            
+                                            <p id="file-name-display" class="text-sm font-bold text-indigo-600 mt-2 hidden"></p>
                                         </div>
                                     </div>
                                     
-                                    <input type="file" name="bukti_foto" accept="image/*" class="mt-4 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100 transition-colors sm:hidden">
-                                </div>
+                                    </div>
                             </div>
                         </div>
 
-                        
                         <div class="pt-6 border-t border-gray-100 flex flex-col-reverse sm:flex-row sm:justify-end gap-3">
                             <a href="{{ route('admin.student-violations.index') }}" class="w-full sm:w-auto px-6 py-3 bg-white text-gray-700 font-bold rounded-xl border border-gray-200 hover:bg-gray-50 text-center transition-all">
                                 Batal
@@ -165,9 +158,9 @@
         </div>
     </div>
 
-    
     <script src="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/js/tom-select.complete.min.js"></script>
     <script>
+        // Inisialisasi TomSelect
         new TomSelect("#select-student", {
             create: false,
             sortField: {
@@ -191,5 +184,17 @@
                 }
             }
         });
+
+        // Script Tambahan: Menampilkan Nama File setelah dipilih
+        function updateFileName(input) {
+            const fileNameDisplay = document.getElementById('file-name-display');
+            if (input.files && input.files.length > 0) {
+                fileNameDisplay.textContent = "File Terpilih: " + input.files[0].name;
+                fileNameDisplay.classList.remove('hidden');
+            } else {
+                fileNameDisplay.textContent = "";
+                fileNameDisplay.classList.add('hidden');
+            }
+        }
     </script>
 </x-app-layout>
