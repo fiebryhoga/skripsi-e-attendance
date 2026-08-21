@@ -139,3 +139,33 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
 });
 
 require __DIR__.'/auth.php';
+
+// Route for API Postman testing (Trigger WA Gateway sending)
+Route::post('/api/test/trigger-wa', function (\Illuminate\Http\Request $request, \App\Services\WhatsAppService $waService) {
+    // 1. Ambil data simulasi dari request Postman, atau gunakan default
+    $number = $request->input('number', '081234567890');
+    $studentName = $request->input('name', 'Siswa Test');
+    $status = $request->input('status', 'Alpha');
+    $mapel = $request->input('mapel', 'Matematika');
+    $hariTanggal = $request->input('date', 'Rabu, 22 Juli 2026');
+    $infoJam = $request->input('time', 'Jam pelajaran ke 1 - 2');
+
+    // 2. Format pesan menggunakan logic yang sama dengan aplikasi
+    $msgOrtu = $waService->formatAttendanceMessage($studentName, $status, $mapel, $hariTanggal, $infoJam);
+    
+    // 3. Eksekusi pengiriman ke WA Gateway (menggunakan setting di .env)
+    // Ini akan memicu Http::post ke WA_GATEWAY_URL yang ada di .env
+    $result = $waService->send($number, $msgOrtu);
+
+    // 4. Return response ke Postman
+    return response()->json([
+        'status' => 'success',
+        'message' => 'Simulasi trigger pengiriman WA telah dieksekusi oleh Laravel',
+        'wa_gateway_url_target' => config('services.wa_gateway.url'),
+        'payload_that_laravel_sent' => [
+            'number' => $number,
+            'message' => $msgOrtu
+        ],
+        'wa_gateway_response_status' => $result ? 'Berhasil dikirim ke gateway' : 'Gagal terkirim ke gateway (Cek log Laravel)'
+    ]);
+});
